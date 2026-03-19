@@ -259,6 +259,9 @@ app.get("/vistorias-lista", (req, res) => {
 /* ================================
    INICIAR SERVIDOR
 ================================ */
+app.get("/", (req, res) => {
+  res.sendFile(__dirname + "/public/login.html");
+});
 app.listen(PORT, () => {
     console.log(`\x1b[32m%s\x1b[0m`, `SIGOC rodando com sucesso em http://localhost:${PORT}`);
     console.log(`Limites de upload: JSON: 50mb | URL Encoded: 50mb`);

@@ -216,7 +216,7 @@
             };
 
             try {
-                const response = await fetch("http://localhost:3000/ocorrencias", {
+                fetch(`${window.location.origin}/ocorrencias`, {
                     method: "POST", 
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(dados)
