@@ -1,34 +1,109 @@
-router.post("/login", async (req, res) => {
-  try {
-    const { usuario, senha } = req.body;
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>SIGOC MERITI - Login</title>
 
-    console.log("BODY:", req.body);
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
 
-    const { data, error } = await supabase
-      .from("usuarios")
-      .select("*")
-      .eq("usuario", usuario);
+        .loginBox {
+            background: white;
+            padding: 30px;
+            width: 300px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
 
-    console.log("RESULTADO DO BANCO:", data);
+        h2 {
+            color: #0A2A66;
+            margin-bottom: 20px;
+        }
 
-    if (!data || data.length === 0) {
-      return res.status(401).json({ erro: "Usuário não encontrado" });
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+        }
+
+        button {
+            margin-top: 20px;
+            padding: 12px;
+            width: 100%;
+            background: #F57C00;
+            border: none;
+            color: white;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="loginBox">
+    <h2>SIGOC MERITI</h2>
+
+    <input id="usuario" placeholder="Usuário">
+    <input id="senha" type="password" placeholder="Senha">
+
+    <button onclick="realizarLogin()">Entrar</button>
+</div>
+
+<script>
+async function realizarLogin() {
+    const usuario = document.getElementById("usuario").value;
+    const senha = document.getElementById("senha").value;
+
+    try {
+        const resposta = await fetch("/login", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                usuario: usuario,
+                senha: senha
+            })
+        });
+
+        const dados = await resposta.json();
+
+        if (dados.success) {
+            // salva sessão
+            localStorage.setItem("usuario", JSON.stringify(dados.usuario));
+
+            // redireciona
+            window.location.href = "admin.html";
+        } else {
+            alert("Usuário ou senha incorretos!");
+        }
+
+    } catch (erro) {
+        console.error("Erro:", erro);
+        alert("Erro ao conectar com o servidor");
     }
+}
 
-    const user = data[0];
-
-    // ⚠️ COMPARAÇÃO SEM BCRYPT (TESTE)
-    if (senha !== user.senha) {
-      return res.status(401).json({ erro: "Senha incorreta" });
-    }
-
-    return res.json({
-      mensagem: "Login OK",
-      usuario: user
-    });
-
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ erro: "Erro no servidor" });
-  }
+// ENTER funciona
+document.addEventListener('keypress', function (e) {
+    if (e.key === 'Enter') realizarLogin();
 });
+</script>
+
+</body>
+</html>
