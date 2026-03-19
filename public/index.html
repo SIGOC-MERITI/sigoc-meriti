@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>SIGOC-MERITI</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        :root {
+            --primary-blue: #0A2A66;
+            --accent-orange: #F57C00;
+            --success-green: #25D366; 
+            --light-gray: #f5f5f5;
+            --white: #ffffff;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; background: var(--light-gray); color: #333; }
+        header { background: linear-gradient(135deg, #0A2A66 0%, #1545a1 100%); color: white; padding: 25px 15px; text-align: center; font-size: 20px; font-weight: bold; box-shadow: var(--shadow); }
+        .container { padding: 20px; max-width: 600px; margin: 15px auto; background: var(--white); border-radius: 12px; box-shadow: var(--shadow); }
+        label { font-weight: 600; color: var(--primary-blue); display: block; margin-top: 15px; margin-bottom: 5px; }
+        select, input, textarea { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ccc; box-sizing: border-box; font-size: 16px; }
+        
+        button { width: 100%; padding: 14px; margin-top: 10px; border: none; border-radius: 8px; font-weight: bold; font-size: 15px; cursor: pointer; transition: all 0.2s ease; text-transform: uppercase; }
+        .btn-action { background: linear-gradient(to bottom, #FF9800, #F57C00); color: white; box-shadow: 0 4px #e66a00; margin-bottom: 15px; }
+        .btn-save { background: linear-gradient(to bottom, #1545a1, #0A2A66); color: white; box-shadow: 0 4px #051636; margin-top: 20px; }
+        .btn-whatsapp { background: var(--success-green); color: white; box-shadow: 0 4px #128C7E; margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 10px; }
+
+        .equipe-info { background: #eef2f7; padding: 15px; border-radius: 10px; margin-top: 10px; border-left: 6px solid var(--primary-blue); }
+        .etapa { background: #fafafa; padding: 15px; border-radius: 10px; margin-bottom: 20px; border: 1px dashed #bbb; }
+        img { width: 100%; margin-top: 10px; border-radius: 8px; }
+
+        /* Estilo da Papeleta Digital (Escondida) */
+        #papeleta-digital { 
+            position: absolute; left: -9999px; top: 0;
+            width: 800px; padding: 30px; background: white; color: black;
+        }
+        .papeleta-header { text-align: center; border-bottom: 2px solid #000; margin-bottom: 15px; padding-bottom: 10px; }
+        .papeleta-corpo p { margin: 8px 0; font-size: 18px; line-height: 1.4; border-bottom: 1px solid #eee; padding-bottom: 4px; }
+        
+        .foto-box { margin-top: 15px; border: 2px solid #eee; padding: 10px; text-align: center; border-radius: 8px; }
+        .foto-box span { font-size: 13px; font-weight: bold; display: block; color: #444; margin-bottom: 8px; text-transform: uppercase; }
+        .foto-box img { width: 100%; height: auto; max-height: 500px; object-fit: contain; border-radius: 5px; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+
+    <header> SIGOC-MERITI <br> <span style="font-size: 14px; font-weight: normal; opacity: 0.9;">Defesa Civil São João de Meriti</span> </header>
+
+    <div class="container">
+        <label>ALA</label>
+        <select id="ala" onchange="carregarEquipe()">
+            <option value="">Selecione</option>
+            <option value="matriz">ALA MATRIZ</option>
+            <option value="dutra">ALA DUTRA</option>
+            <option value="saojoao">ALA SÃO JOÃO</option>
+            <option value="metropole">ALA METRÓPOLE</option>
+        </select>
+
+        <div id="equipe"></div>
+
+        <label>Tipo de serviço</label>
+        <select id="tipoServico" onchange="mostrarOpcoesServico()">
+            <option value="">Selecione</option>
+            <option value="Poda">Poda</option>
+            <option value="Supressão">Supressão</option>
+        </select>
+
+        <div id="opcoesPoda" style="display:none">
+            <label>Tipo de poda</label>
+            <select id="subTipoPoda">
+                <option value="">Selecione</option>
+                <option>Redução de copa</option>
+                <option>Rebaixamento</option>
+                <option>Drástica</option>
+                <option>Preventiva / manutenção</option>
+                <option>Emergencial</option>
+            </select>
+        </div>
+
+        <label>Quantidade de vegetais</label>
+        <select id="quantidade" onchange="verificarQuantidade()">
+            <option value="1">1</option><option value="2">2</option><option value="3">3</option>
+            <option value="4">4</option><option value="5">5</option><option value="6+">Mais de 6</option>
+        </select>
+        <input type="number" id="quantidadeExtra" placeholder="Quantos?" style="display:none">
+
+        <label>Descrição do serviço realizado</label>
+        <textarea id="descricao" rows="3" maxlength="300"></textarea>
+
+        <label>Status da ocorrência</label>
+        <select id="status"><option>Em andamento</option><option>Finalizado</option></select>
+
+        <button class="btn-action" onclick="capturarGPS()">📍 Capturar Localização</button>
+        <div id="local" style="margin-bottom: 10px; font-size: 14px;"></div>
+
+        <h3 style="color: var(--primary-blue); border-bottom: 1px solid #eee;">Fotos</h3>
+        <div class="etapa"><b>📸 Início</b><div id="inicioContainer"></div><button class="btn-action" onclick="adicionarFoto('inicio')">Adicionar foto</button></div>
+        <div class="etapa"><b>📸 Meio</b><div id="meioContainer"></div><button class="btn-action" onclick="adicionarFoto('meio')">Adicionar foto</button></div>
+        <div class="etapa"><b>📸 Fim</b><div id="fimContainer"></div><button class="btn-action" onclick="adicionarFoto('fim')">Adicionar foto</button></div>
+
+        <label>Nome do solicitante</label><input type="text" id="solicitante">
+        <label>CPF do solicitante</label><input type="text" id="cpf">
+
+        <button id="btnSalvar" class="btn-save" onclick="salvarPlantao()">✅ SALVAR NO SISTEMA</button>
+        <button id="btnZap" class="btn-whatsapp" onclick="gerarECompartilhar()" style="display:none;">
+            <span>💾 BAIXAR PAPELETA PARA O WHATSAPP</span>
+        </button>
+    </div>
+
+    <div id="papeleta-digital">
+        <div class="papeleta-header">
+            <h2 style="margin:0; color: #0A2A66;">DEFESA CIVIL MERITI</h2>
+            <p style="margin:5px 0 0 0; font-size: 14px; font-weight: bold;">PAPELETA DE OCORRÊNCIA DIGITAL</p>
+        </div>
+        <div class="papeleta-corpo">
+            <p><strong>📅 DATA:</strong> <span id="p-data"></span></p>
+            <p><strong>🚒 EQUIPE:</strong> <span id="p-ala"></span></p>
+            <p><strong>🛠️ SERVIÇO:</strong> <span id="p-tipo"></span> <span id="p-subtipo"></span></p>
+            <p><strong>📍 LOCAL:</strong> <span id="p-local"></span></p>
+            <p><strong>👤 SOLICITANTE:</strong> <span id="p-solicitante"></span></p>
+            <p><strong>📝 OBS:</strong> <span id="p-desc"></span></p>
+        </div>
+        <div class="foto-box" id="p-box-inicio"><span>📷 SITUAÇÃO INICIAL</span></div>
+        <div class="foto-box" id="p-box-meio"><span>📷 DURANTE O SERVIÇO</span></div>
+        <div class="foto-box" id="p-box-fim"><span>📷 SERVIÇO CONCLUÍDO</span></div>
+    </div>
+
+    <script>
+        const alas = {
+            matriz: { comando: "Fernandes", chefe: "Jorge Ferreira", motoristas: ["Leidson", "Carlindo"], agentes: ["Alexsander", "Carlos", "Gustavo"] },
+            saojoao: { comando: "Correa", chefe: "Joao", motoristas: ["Anderson", "Leon"], agentes: ["Sidney", "Alexsandro", "Marcos Soares"] },
+            dutra: { comando: "Brito", chefe: "Marcelo", motoristas: ["Luiz Claudio", "Jesus"], agentes: ["Naldo", "Edmilson", "Paulo"] },
+            metropole: { comando: "Bandeira", chefe: "Sergio Laino", motoristas: ["Vanderlei", "Cicero"], agentes: ["Renato", "Sergio Resende", "Luiz Fernando"] }
+        };
+
+        let endereco = "", bairro = "", fotosPapeleta = { inicio: [], meio: [], fim: [] };
+
+        function carregarEquipe() {
+            let val = document.getElementById("ala").value;
+            let div = document.getElementById("equipe");
+            if (!val) { div.innerHTML = ""; return; }
+            let d = alas[val];
+            div.innerHTML = `<div class="equipe-info"><b>Comando:</b> ${d.comando} | <b>Chefe:</b> ${d.chefe}<br><b>Motoristas:</b> ${d.motoristas.join(", ")}<br><b>Agentes:</b> ${d.agentes.join(", ")}</div>`;
+        }
+
+        function mostrarOpcoesServico() { document.getElementById("opcoesPoda").style.display = (document.getElementById("tipoServico").value == "Poda") ? "block" : "none"; }
+        function verificarQuantidade() { document.getElementById("quantidadeExtra").style.display = (document.getElementById("quantidade").value == "6+") ? "block" : "none"; }
+
+        function capturarGPS() {
+            document.getElementById("local").innerHTML = "⌛ Obtendo localização...";
+            navigator.geolocation.getCurrentPosition(async (pos) => {
+                try {
+                    const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&format=json`);
+                    const data = await res.json();
+                    endereco = data.address.road || "Rua não identificada";
+                    bairro = data.address.suburb || data.address.neighbourhood || "";
+                    document.getElementById("local").innerHTML = `📍 <b>Local:</b> ${endereco} - ${bairro}`;
+                } catch (e) { alert("Erro ao obter endereço."); }
+            }, () => alert("Ative o GPS!"));
+        }
+
+        function adicionarFoto(tipo) {
+            let input = document.createElement("input");
+            input.type = "file"; input.accept = "image/*"; input.capture = "environment";
+            input.onchange = e => {
+                let reader = new FileReader();
+                reader.onload = ev => {
+                    let img = new Image();
+                    img.src = ev.target.result;
+                    img.onload = () => {
+                        let canvas = document.createElement("canvas");
+                        let ctx = canvas.getContext("2d");
+                        
+                        // OTIMIZAÇÃO: Reduzi para 700px e qualidade 0.6 para garantir que passe no servidor
+                        let maxW = 700; 
+                        let scale = maxW / img.width;
+                        canvas.width = maxW; canvas.height = img.height * scale;
+                        
+                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                        
+                        // Conversão para JPEG com compressão de 60%
+                        let compressed = canvas.toDataURL("image/jpeg", 0.6);
+                        
+                        let dImg = document.createElement("img");
+                        dImg.src = compressed;
+                        document.getElementById(tipo + "Container").appendChild(dImg);
+                        fotosPapeleta[tipo].push(compressed);
+                    };
+                };
+                reader.readAsDataURL(e.target.files[0]);
+            };
+            input.click();
+        }
+
+        async function salvarPlantao() {
+            const alaSel = document.getElementById("ala");
+            if(!alaSel.value) return alert("Selecione a ALA!");
+            
+            const btn = document.getElementById("btnSalvar");
+            btn.innerText = "⌛ SALVANDO NO SISTEMA..."; btn.disabled = true;
+
+            const dados = {
+                data: new Date().toLocaleDateString('pt-BR'),
+                equipe: alaSel.options[alaSel.selectedIndex].text,
+                tipo: document.getElementById("tipoServico").value,
+                subtipo: document.getElementById("subTipoPoda").value || "",
+                quantidade: document.getElementById("quantidade").value == "6+" ? document.getElementById("quantidadeExtra").value : document.getElementById("quantidade").value,
+                descricao: document.getElementById("descricao").value,
+                status: document.getElementById("status").value,
+                endereco, bairro,
+                solicitante: document.getElementById("solicitante").value,
+                cpf: document.getElementById("cpf").value,
+                // Aqui juntamos todas as fotos comprimidas
+                fotos: [...fotosPapeleta.inicio, ...fotosPapeleta.meio, ...fotosPapeleta.fim].join(",")
+            };
+
+            try {
+                const response = await fetch("http://localhost:3000/ocorrencias", {
+                    method: "POST", 
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(dados)
+                });
+
+                if(response.ok) {
+                    alert("✅ SALVO COM SUCESSO!");
+                    document.getElementById("btnZap").style.display = "flex";
+                } else { 
+                    // Se der erro 413 (Payload Too Large), cai aqui
+                    alert("Erro: Fotos pesadas demais. O sistema limpou as fotos para você tentar novamente com menos imagens."); 
+                    fotosPapeleta = { inicio: [], meio: [], fim: [] };
+                    document.getElementById("inicioContainer").innerHTML = "";
+                    document.getElementById("meioContainer").innerHTML = "";
+                    document.getElementById("fimContainer").innerHTML = "";
+                }
+            } catch (error) { 
+                alert("Erro de conexão com o servidor. Verifique se o server.js está rodando."); 
+            }
+            btn.innerText = "✅ SALVAR NO SISTEMA"; btn.disabled = false;
+        }
+
+        async function gerarECompartilhar() {
+            const alaSel = document.getElementById('ala');
+            document.getElementById('p-data').innerText = new Date().toLocaleString('pt-BR');
+            document.getElementById('p-ala').innerText = alaSel.options[alaSel.selectedIndex].text;
+            document.getElementById('p-tipo').innerText = document.getElementById('tipoServico').value;
+            document.getElementById('p-subtipo').innerText = document.getElementById('subTipoPoda').value ? `(${document.getElementById('subTipoPoda').value})` : "";
+            document.getElementById('p-local').innerText = `${endereco} - ${bairro}`;
+            document.getElementById('p-solicitante').innerText = document.getElementById('solicitante').value;
+            document.getElementById('p-desc').innerText = document.getElementById('descricao').value;
+
+            ['inicio', 'meio', 'fim'].forEach(t => {
+                const box = document.getElementById(`p-box-${t}`);
+                box.querySelectorAll('img').forEach(i => i.remove());
+                fotosPapeleta[t].forEach(src => { 
+                    let i = new Image(); 
+                    i.src = src; 
+                    box.appendChild(i); 
+                });
+            });
+
+            const canvas = await html2canvas(document.getElementById('papeleta-digital'), { 
+                scale: 1, // Escala 1 para não aumentar o peso do arquivo final
+                useCORS: true 
+            });
+            
+            const link = document.createElement('a');
+            link.download = `Papeleta_DC_${Date.now()}.jpg`;
+            link.href = canvas.toDataURL("image/jpeg", 0.7);
+            link.click();
+            setTimeout(() => {
+    window.location.reload();
+}, 300);
+            alert("PAPELETA GERADA! Agora você pode enviá-la pelo WhatsApp.");
+        }
+    </script>
+</body>
+</html>

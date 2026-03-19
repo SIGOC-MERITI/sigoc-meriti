@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vistorias - SIGOC</title>
+
+<style>
+body {
+    font-family: 'Segoe UI', sans-serif;
+    margin: 0;
+    background: #f5f5f5;
+}
+
+header {
+    background: #0A2A66;
+    color: white;
+    padding: 20px;
+    text-align: center;
+    font-weight: bold;
+}
+
+.container {
+    max-width: 500px;
+    margin: 30px auto;
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+label {
+    font-size: 13px;
+    font-weight: bold;
+    color: #0A2A66;
+}
+
+input, select, textarea {
+    width: 100%;
+    padding: 12px;
+    margin-top: 5px;
+    margin-bottom: 15px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+}
+
+textarea {
+    resize: none;
+}
+
+button {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.btn-salvar {
+    background: #0A2A66;
+    color: white;
+}
+
+.btn-voltar {
+    background: #ccc;
+    margin-top: 10px;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+🛠️ SIGOC MERITI - VISTORIAS
+</header>
+
+<div class="container">
+
+<!-- 🔹 SOLICITANTE -->
+<h3>👤 Dados do Solicitante</h3>
+
+<label>Nome do solicitante</label>
+<input type="text" id="solicitante_nome">
+
+<label>CPF</label>
+<input type="text" id="solicitante_cpf">
+
+<label>Telefone</label>
+<input type="text" id="solicitante_telefone">
+
+<label>Email (opcional)</label>
+<input type="email" id="solicitante_email">
+
+<label>Tipo de vínculo</label>
+<select id="solicitante_tipo">
+    <option value="">Selecione</option>
+    <option>Morador</option>
+    <option>Proprietário</option>
+    <option>Responsável</option>
+    <option>Denunciante</option>
+</select>
+
+<!-- 🔹 VISTORIA -->
+<h3>📋 Dados da Vistoria</h3>
+
+<label>Tipo de Vistoria</label>
+<select id="tipo">
+    <option value="">Selecione</option>
+    <option>Imóveis e Estruturas</option>
+    <option>Risco Geológico</option>
+    <option>Pós-Incêndio</option>
+    <option>Infraestrutura Pública</option>
+    <option>Vizinhança / Obras</option>
+    <option>Queda de Árvores</option>
+</select>
+
+<label>Classificação de risco</label>
+<select id="risco">
+    <option value="">Selecione</option>
+    <option>Baixo</option>
+    <option>Médio</option>
+    <option>Alto</option>
+    <option>Crítico</option>
+</select>
+
+<!-- 🔹 LOCAL -->
+<h3>📍 Local da Vistoria</h3>
+
+<label>Endereço</label>
+<input type="text" id="endereco">
+
+<label>Bairro</label>
+<input type="text" id="bairro">
+
+<label>Referência</label>
+<input type="text" id="referencia">
+
+<!-- 🔹 DESCRIÇÃO -->
+<h3>📝 Descrição Técnica</h3>
+
+<textarea id="descricao" rows="4"></textarea>
+
+<!-- 🔹 RESPONSÁVEL -->
+<h3>👷 Responsável</h3>
+
+<input type="text" id="responsavel">
+
+<!-- 🔹 BOTÕES -->
+<button class="btn-salvar" onclick="salvarVistoria()">SALVAR VISTORIA</button>
+<button class="btn-voltar" onclick="voltar()">VOLTAR</button>
+
+</div>
+
+<script>
+function salvarVistoria() {
+    const dados = {
+        solicitante: {
+            nome: document.getElementById("solicitante_nome").value,
+            cpf: document.getElementById("solicitante_cpf").value,
+            telefone: document.getElementById("solicitante_telefone").value,
+            email: document.getElementById("solicitante_email").value,
+            tipo: document.getElementById("solicitante_tipo").value
+        },
+        vistoria: {
+            tipo: document.getElementById("tipo").value,
+            risco: document.getElementById("risco").value,
+            endereco: document.getElementById("endereco").value,
+            bairro: document.getElementById("bairro").value,
+            referencia: document.getElementById("referencia").value,
+            descricao: document.getElementById("descricao").value,
+            responsavel: document.getElementById("responsavel").value,
+            data: new Date().toISOString()
+        }
+    };
+
+    console.log("Vistoria:", dados);
+
+    alert("Vistoria registrada com sucesso!");
+}
+
+function voltar() {
+    window.location.href = "admin.html";
+}
+</script>
+
+</body>
+</html>

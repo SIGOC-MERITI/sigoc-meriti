@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Relatório de Serviços - SIGOC</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
+    <style>
+        :root {
+            --primary-blue: #0A2A66;
+            --accent-orange: #F57C00;
+            --excel-green: #217346;
+            --white: #ffffff;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; background: #f5f5f5; }
+
+        header {
+            background: linear-gradient(135deg, #0A2A66 0%, #1545a1 100%);
+            color: white; padding: 20px; text-align: center;
+            font-size: 18px; font-weight: bold; box-shadow: var(--shadow);
+        }
+
+        .filter-bar {
+            background: white; padding: 15px; margin: 10px; border-radius: 8px;
+            display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; box-shadow: var(--shadow);
+        }
+
+        .filter-group { display: flex; flex-direction: column; gap: 5px; }
+        .filter-group label { font-size: 12px; font-weight: bold; color: var(--primary-blue); }
+
+        input, select { padding: 8px; border-radius: 5px; border: 1px solid #ccc; }
+
+        .btn-filter { background: var(--accent-orange); color: white; border: none; padding: 10px 20px; border-radius: 5px; font-weight: bold; cursor: pointer; }
+        .btn-excel { background: var(--excel-green); color: white; border: none; padding: 10px 20px; border-radius: 5px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+
+        .table-container { margin: 10px; background: white; border-radius: 8px; overflow-x: auto; box-shadow: var(--shadow); }
+
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th { background: var(--primary-blue); color: white; padding: 12px; text-align: left; }
+        td { padding: 10px; border-bottom: 1px solid #eee; }
+
+        tbody tr { cursor: pointer; transition: background 0.2s; }
+        tbody tr:hover { background-color: #f0f4f8; }
+
+        .status-badge { padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; }
+        .status-finalizado { background: #c8e6c9; color: #2e7d32; }
+        .status-andamento { background: #fff9c4; color: #f57f17; }
+
+        /* MODAIS */
+        .modal {
+            display: none; position: fixed; z-index: 1000; left: 0; top: 0;
+            width: 100%; height: 100%; background-color: rgba(0,0,0,0.8); backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background-color: white; margin: 2% auto; border-radius: 12px;
+            width: 95%; max-width: 600px; box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            overflow: hidden; animation: slideDown 0.3s ease-out;
+        }
+
+        @keyframes slideDown { from { transform: translateY(-30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        .modal-header { background: var(--primary-blue); color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; }
+        .close-btn { font-size: 28px; cursor: pointer; line-height: 1; }
+        .modal-body { padding: 20px; color: #444; max-height: 80vh; overflow-y: auto; }
+
+        .info-row { margin-bottom: 15px; border-bottom: 1px solid #f0f0f0; padding-bottom: 10px; }
+        .info-row b { color: var(--primary-blue); display: block; font-size: 11px; text-transform: uppercase; margin-bottom: 5px; letter-spacing: 1px; }
+
+        .desc-box { background: #f9f9f9; padding: 12px; border-radius: 6px; border-left: 4px solid var(--accent-orange); font-style: italic; white-space: pre-wrap; line-height: 1.4; }
+
+        /* GALERIA AJUSTADA */
+        .gallery-container { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); 
+            gap: 12px; 
+            margin-top: 10px; 
+        }
+        .photo-thumb { 
+            width: 100%; 
+            height: 140px; 
+            object-fit: cover; 
+            border-radius: 8px; 
+            border: 2px solid #eee; 
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .photo-thumb:hover { transform: scale(1.03); border-color: var(--accent-orange); }
+
+        /* VISUALIZADOR DE FOTO CHEIA */
+        #viewerModal { display: none; align-items: center; justify-content: center; flex-direction: column; }
+        #viewerModal img { 
+            max-width: 90%; 
+            max-height: 85vh; 
+            border: 4px solid white; 
+            border-radius: 4px; 
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>SIGOC MERITI - Relatório de Serviços</header>
+
+    <div class="filter-bar">
+        <div class="filter-group"><label>Data Início</label><input type="date" id="dataInicio"></div>
+        <div class="filter-group"><label>Data Fim</label><input type="date" id="dataFim"></div>
+        <div class="filter-group">
+            <label>Tipo</label>
+            <select id="filtroTipo">
+                <option value="">Todos</option>
+                <option value="Poda">Poda</option>
+                <option value="Supressão">Supressão</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label>Status</label>
+            <select id="filtroStatus">
+                <option value="">Todos</option>
+                <option value="Finalizado">Finalizado</option>
+                <option value="Em andamento">Em andamento</option>
+            </select>
+        </div>
+        <button class="btn-filter" onclick="aplicarFiltros()">FILTRAR</button>
+        <button class="btn-excel" onclick="exportarExcel()">📊 EXCEL</button>
+    </div>
+
+    <div class="table-container">
+        <table id="tabelaRelatorio">
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Equipe</th>
+                    <th>Solicitante</th>
+                    <th>Bairro</th>
+                    <th>Tipo</th>
+                    <th>Qtd</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="tabelaCorpo"></tbody>
+        </table>
+    </div>
+
+    <div id="modalDetalhes" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 style="margin:0">Detalhes da Ocorrência</h3>
+                <span class="close-btn" onclick="fecharModal()">&times;</span>
+            </div>
+            <div class="modal-body" id="detalhesCorpo"></div>
+        </div>
+    </div>
+
+    <div id="viewerModal" class="modal" onclick="this.style.display='none'">
+        <div style="position: absolute; top: 20px; right: 30px;"><span class="close-btn" style="color:white;">&times;</span></div>
+        <img id="fullPhoto" src="">
+        <p style="color:white; margin-top:15px; font-size:14px;">Clique em qualquer lugar para fechar</p>
+    </div>
+
+    <script>
+        let todasOcorrencias = [];
+        let dadosExibidos = [];
+
+        async function carregarDados() {
+            try {
+                let res = await fetch("/ocorrencias");
+                todasOcorrencias = await res.json();
+                dadosExibidos = [...todasOcorrencias];
+                renderizarTabela(dadosExibidos);
+            } catch (e) { console.error("Erro ao carregar dados:", e); }
+        }
+
+        function renderizarTabela(dados) {
+            const corpo = document.getElementById("tabelaCorpo");
+            corpo.innerHTML = "";
+            dados.forEach((item, index) => {
+                const statusClass = item.status === "Finalizado" ? "status-finalizado" : "status-andamento";
+                const dataFormatada = item.data && item.data.includes("-") ? item.data.split("-").reverse().join("/") : item.data;
+                corpo.innerHTML += `
+                    <tr onclick="mostrarDetalhes(${index})">
+                        <td>${dataFormatada}</td>
+                        <td style="text-transform: uppercase; font-weight:bold;">${item.equipe}</td>
+                        <td>${item.solicitante || "---"}</td>
+                        <td>${item.bairro}</td>
+                        <td>${item.tipo}</td>
+                        <td>${item.quantidade}</td>
+                        <td><span class="status-badge ${statusClass}">${item.status}</span></td>
+                    </tr>`;
+            });
+        }
+
+        function mostrarDetalhes(index) {
+            const item = dadosExibidos[index];
+            const corpo = document.getElementById("detalhesCorpo");
+
+           let fotosHtml = '';
+
+// 🔥 NOVA VALIDAÇÃO CORRETA
+let listaFotos = [];
+
+if (item.fotos) {
+    listaFotos = String(item.fotos)
+        .split(',')
+        .map(f => f.trim())
+        .filter(f => f.length > 100); // só base64 real
+}
+
+if (listaFotos.length > 0) {
+    fotosHtml = `
+        <div class="info-row" style="border-bottom:none">
+            <b>📷 ANEXOS / FOTOS (Clique para ampliar)</b>
+            <div class="gallery-container">
+                ${listaFotos.map(imgData => {
+                    let cleanData = imgData;
+
+                    // 🔥 GARANTE PREFIXO
+                    if (!cleanData.startsWith('data:image')) {
+                        cleanData = `data:image/jpeg;base64,${cleanData}`;
+                    }
+
+                    return `<img src="${cleanData}" class="photo-thumb" onclick="event.stopPropagation(); abrirFoto('${cleanData}')">`;
+                }).join('')}
+            </div>
+        </div>`;
+} else {
+                fotosHtml = `<div class="info-row"><b>📷 ANEXOS / FOTOS</b><p style="font-size:12px; color:#999;">Nenhuma foto registrada para esta ocorrência.</p></div>`;
+            }
+
+            corpo.innerHTML = `
+                <div class="info-row"><b>📍 ENDEREÇO</b> ${item.endereco || "Não informado"}</div>
+                <div class="info-row"><b>🏘️ BAIRRO</b> ${item.bairro || "Não informado"}</div>
+                <div class="info-row"><b>📋 DESCRIÇÃO DO SERVIÇO</b><div class="desc-box">${item.descricao || "Sem observações adicionais."}</div></div>
+                <div class="info-row"><b>👤 SOLICITANTE / CPF</b> ${item.solicitante || "Não informado"} ${item.cpf ? ' - ' + item.cpf : ''}</div>
+                <div class="info-row"><b>🚛 EQUIPE RESPONSÁVEL</b> ALA ${(item.equipe || "").toUpperCase()}</div>
+                ${fotosHtml}
+            `;
+            document.getElementById("modalDetalhes").style.display = "block";
+        }
+
+        function abrirFoto(src) {
+            const fullPhoto = document.getElementById("fullPhoto");
+            fullPhoto.src = src;
+            document.getElementById("viewerModal").style.display = "flex";
+        }
+
+        function fecharModal() { document.getElementById("modalDetalhes").style.display = "none"; }
+        
+        window.onclick = function(event) {
+            const modal = document.getElementById("modalDetalhes");
+            if (event.target == modal) fecharModal();
+        }
+
+        function aplicarFiltros() {
+            const dtInicio = document.getElementById("dataInicio").value;
+            const dtFim = document.getElementById("dataFim").value;
+            const tipo = document.getElementById("filtroTipo").value;
+            const status = document.getElementById("filtroStatus").value;
+
+            dadosExibidos = todasOcorrencias.filter(item => {
+                let bateData = true;
+                if (dtInicio && item.data < dtInicio) bateData = false;
+                if (dtFim && item.data > dtFim) bateData = false;
+                let bateTipo = tipo === "" || item.tipo === tipo;
+                let bateStatus = status === "" || item.status === status;
+                return bateData && bateTipo && bateStatus;
+            });
+            renderizarTabela(dadosExibidos);
+        }
+
+        function exportarExcel() {
+            const tabela = document.getElementById("tabelaRelatorio");
+            const wb = XLSX.utils.table_to_book(tabela, { sheet: "Relatório SIGOC" });
+            XLSX.writeFile(wb, `Relatorio_Ocorrencias_SIGOC.xlsx`);
+        }
+
+        window.onload = carregarDados;
+    </script>
+</body>
+</html>

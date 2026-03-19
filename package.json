@@ -1,0 +1,16 @@
+{
+  "name": "sigoc-meriti",
+  "version": "1.0.0",
+  "description": "Sistema de Gestão de Ocorrências Defesa Civil São João de Meriti",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "author": "Defesa Civil Meriti",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2",
+    "sqlite3": "^5.1.6",
+    "cors": "^2.8.5"
+  }
+}

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>SIGOC MERITI - Login</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f5f5f5; margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        .loginBox { background: white; padding: 30px; width: 300px; border-radius: 8px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        h2 { color: #0A2A66; margin-bottom: 20px; }
+        input { width: 100%; padding: 10px; margin-top: 10px; border-radius: 5px; border: 1px solid #ccc; box-sizing: border-box; }
+        button { margin-top: 20px; padding: 12px; width: 100%; background: #F57C00; border: none; color: white; font-weight: bold; border-radius: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<div class="loginBox">
+    <h2>SIGOC MERITI</h2>
+    <input id="usuario" placeholder="Usuário">
+    <input id="senha" type="password" placeholder="Senha">
+    <button onclick="realizarLoginLocal()">Entrar</button>
+</div>
+
+<script>
+    function realizarLoginLocal() {
+        const userDigitado = document.getElementById("usuario").value;
+        const senhaDigitada = document.getElementById("senha").value;
+
+        // 1. Busca a lista de usuários do cadastro (LocalStorage)
+        const listaUsuarios = JSON.parse(localStorage.getItem("db_usuarios")) || [];
+
+        // 2. Procura se existe alguém com esse login e senha
+        const usuarioValido = listaUsuarios.find(u => 
+            u.usuario === userDigitado && u.senha === senhaDigitada
+        );
+
+        if (usuarioValido) {
+            // 3. Salva a sessão do usuário logado
+            localStorage.setItem("usuario", JSON.stringify(usuarioValido));
+            
+            // 4. Vai para o painel administrativo
+            window.location.href = "admin.html";
+        } else {
+            alert("Usuário ou senha incorretos! Verifique o cadastro na tela de usuários.");
+        }
+    }
+
+    // Atalho para entrar com a tecla Enter
+    document.addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') realizarLoginLocal();
+    });
+</script>
+
+</body>
+</html>

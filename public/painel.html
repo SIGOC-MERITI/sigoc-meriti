@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Painel Operacional - SIGOC</title>
+
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            margin: 0;
+            background: #f5f5f5;
+        }
+
+        header {
+            background: #0A2A66;
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        header h1 { margin: 0; font-size: 22px; }
+        header p { margin: 5px 0 0; opacity: 0.8; font-size: 14px; }
+
+        .container {
+            padding: 20px;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .user-info {
+            background: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            border: 1px solid #ddd;
+        }
+
+        button {
+            width: 100%;
+            padding: 18px;
+            margin-top: 15px;
+            background: #F57C00;
+            border: none;
+            color: white;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background: #e67600;
+        }
+
+        .btn-logout {
+            background: #d32f2f;
+            margin-top: 30px;
+        }
+
+        .btn-logout:hover {
+            background: #b71c1c;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <h1>SIGOC MERITI</h1>
+        <p>Painel Operacional</p>
+    </header>
+
+    <div class="container">
+        <div class="user-info" id="userInfo">
+            Carregando usuário...
+        </div>
+
+        <button onclick="novaOcorrencia()">
+            📝 Registrar Ocorrência
+        </button>
+
+        <button onclick="window.location='relatorios.html'">
+            📊 Ver Relatórios
+        </button>
+
+        <button class="btn-logout" onclick="logout()">
+            Sair do Sistema
+        </button>
+    </div>
+
+    <script>
+        // Busca os dados do usuário logado
+        let usuarioDados = JSON.parse(localStorage.getItem("usuario"));
+
+        if (!usuarioDados) {
+            window.location = "login.html";
+        } else {
+            document.getElementById("userInfo").innerHTML = `Bem-vindo, <b>${usuarioDados.nome}</b>`;
+        }
+
+        function novaOcorrencia() {
+            // O formulário de registro está no index.html
+            window.location = "index.html";
+        }
+
+        function logout() {
+            localStorage.removeItem("usuario");
+            window.location = "login.html";
+        }
+    </script>
+
+</body>
+</html>

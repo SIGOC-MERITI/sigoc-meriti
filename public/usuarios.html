@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciar Usuários - SIGOC</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-blue: #0A2A66;
+            --accent-orange: #F57C00;
+            --white: #ffffff;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; background: #f4f7f9; }
+        header {
+            background: linear-gradient(135deg, var(--primary-blue) 0%, #1545a1 100%);
+            color: white; padding: 20px; text-align: center; font-weight: bold;
+        }
+        .container { max-width: 800px; margin: 20px auto; padding: 20px; }
+        .btn-voltar {
+            text-decoration: none; color: var(--primary-blue); font-weight: bold;
+            display: inline-block; margin-bottom: 20px;
+        }
+        .user-form {
+            background: white; padding: 20px; border-radius: 12px;
+            box-shadow: var(--shadow); margin-bottom: 30px;
+        }
+        .user-form h3 { margin-top: 0; color: var(--primary-blue); border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        .input-group { margin-bottom: 15px; }
+        label { display: block; font-size: 13px; font-weight: bold; margin-bottom: 5px; color: #555; }
+        input, select { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ccc; box-sizing: border-box; }
+        .btn-add {
+            background: var(--accent-orange); color: white; border: none; width: 100%;
+            padding: 12px; border-radius: 6px; font-weight: bold; cursor: pointer;
+        }
+        .user-table { background: white; border-radius: 12px; box-shadow: var(--shadow); overflow: hidden; }
+        table { width: 100%; border-collapse: collapse; }
+        th { background: #eee; padding: 12px; text-align: left; font-size: 14px; color: var(--primary-blue); }
+        td { padding: 12px; border-bottom: 1px solid #f0f0f0; font-size: 14px; }
+        .btn-delete { color: #d32f2f; cursor: pointer; border: none; background: none; font-size: 18px; }
+    </style>
+</head>
+<body>
+    <header>SIGOC MERITI - Gestão de Usuários</header>
+    <div class="container">
+        <a href="admin.html" class="btn-voltar"><i class="fas fa-arrow-left"></i> Voltar ao Painel</a>
+        
+        <div class="user-form">
+            <h3><i class="fas fa-user-plus"></i> Novo Usuário</h3>
+            <div class="input-group">
+                <label>Nome Completo</label>
+                <input type="text" id="nomeUser" placeholder="Ex: João Silva">
+            </div>
+            <div class="input-group">
+                <label>Login (Usuário)</label>
+                <input type="text" id="loginUser" placeholder="Ex: joao.defesa">
+            </div>
+            <div class="input-group">
+                <label>Senha de Acesso</label>
+                <input type="password" id="senhaUser" placeholder="Crie uma senha para o usuário">
+            </div>
+            <div class="input-group">
+                <label>Nível de Acesso</label>
+                <select id="nivelUser">
+                    <option value="Gerente Adm">Gerente Adm (Acesso Total)</option>
+                    <option value="Superintendente">Superintendente (Acesso Total)</option>
+                    <option value="Secretario">Secretário (Acesso Total)</option>
+                    <option value="Agente adm">Agente adm (Usuários/Relatórios)</option>
+                    <option value="Comandante de operacoes">Comandante de Operações (Ocorrências)</option>
+                    <option value="Chefe de Guarnicao">Chefe de Guarnição (Ocorrências)</option>
+                </select>
+            </div>
+            <button class="btn-add" onclick="adicionarUsuario()">CADASTRAR USUÁRIO</button>
+        </div>
+
+        <div class="user-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Usuário</th>
+                        <th>Nível</th>
+                        <th>Ação</th>
+                    </tr>
+                </thead>
+                <tbody id="listaUsuarios"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // Carrega usuários do LocalStorage
+        let usuarios = JSON.parse(localStorage.getItem("db_usuarios")) || [];
+
+        // LIMPEZA AUTOMÁTICA DE ERROS ANTIGOS:
+        // Se houver usuários sem senha (antigos), vamos resetar a lista
+        if (usuarios.length > 0 && !usuarios[0].senha) {
+            console.log("Detectados usuários antigos sem senha. Resetando banco para segurança.");
+            usuarios = [{ nome: "Jeferson", usuario: "jeferson.adm", senha: "123", nivel: "Gerente Adm" }];
+            localStorage.setItem("db_usuarios", JSON.stringify(usuarios));
+        }
+
+        function renderizarUsuarios() {
+            const corpo = document.getElementById("listaUsuarios");
+            corpo.innerHTML = "";
+            usuarios.forEach((u, index) => {
+                corpo.innerHTML += `<tr>
+                    <td>${u.nome}</td>
+                    <td>${u.usuario}</td>
+                    <td><b>${u.nivel}</b></td>
+                    <td><button class="btn-delete" onclick="removerUsuario(${index})"><i class="fas fa-trash"></i></button></td>
+                </tr>`;
+            });
+            localStorage.setItem("db_usuarios", JSON.stringify(usuarios));
+        }
+
+        function adicionarUsuario() {
+            const nome = document.getElementById("nomeUser").value;
+            const login = document.getElementById("loginUser").value;
+            const senha = document.getElementById("senhaUser").value;
+            const nivel = document.getElementById("nivelUser").value;
+
+            if(!nome || !login || !senha) {
+                return alert("Preencha TODOS os campos, inclusive a senha!");
+            }
+
+            // Adiciona o usuário completo com senha
+            usuarios.push({ nome, usuario: login, senha, nivel });
+            
+            renderizarUsuarios();
+            
+            // Limpa os campos após sucesso
+            document.getElementById("nomeUser").value = "";
+            document.getElementById("loginUser").value = "";
+            document.getElementById("senhaUser").value = "";
+        }
+
+        function removerUsuario(index) {
+            if(confirm("Deseja remover este acesso?")) {
+                usuarios.splice(index, 1);
+                renderizarUsuarios();
+            }
+        }
+
+        // Inicia a tabela ao carregar
+        window.onload = renderizarUsuarios;
+    </script>
+</body>
+</html>

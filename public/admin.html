@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Administrativo - SIGOC</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-blue: #0A2A66;
+            --accent-orange: #F57C00;
+            --bg-gray: #f4f7f9;
+            --white: #ffffff;
+            --text-dark: #333;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            background-color: var(--bg-gray);
+            color: var(--text-dark);
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary-blue) 0%, #1545a1 100%);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+            box-shadow: var(--shadow);
+        }
+
+        header h1 { margin: 0; font-size: 24px; letter-spacing: 1px; }
+        header p { margin: 5px 0 0; font-size: 14px; opacity: 0.8; }
+
+        .welcome-msg {
+            max-width: 900px;
+            margin: 20px auto 0;
+            padding: 0 20px;
+            font-size: 18px;
+            font-weight: 500;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            max-width: 900px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .card {
+            background: var(--white);
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            text-decoration: none;
+            color: var(--text-dark);
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border-bottom: 5px solid transparent;
+        }
+
+        .card:hover {
+            transform: translateY(-10px);
+            border-bottom: 5px solid var(--accent-orange);
+        }
+
+        .card i { font-size: 45px; color: var(--accent-orange); margin-bottom: 15px; }
+        .card h3 { margin: 10px 0; font-size: 20px; color: var(--primary-blue); }
+        .card p { font-size: 14px; color: #666; margin: 0; }
+
+        .card-exit i { color: #d32f2f; }
+        .card-exit:hover { border-bottom: 5px solid #d32f2f; }
+
+        @media (max-width: 600px) {
+            .dashboard-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>SIGOC MERITI</h1>
+        <p>Sistema de Gestão de Ocorrências - Painel Administrativo</p>
+    </header>
+
+    <div class="welcome-msg">
+        Olá, <span id="userName">Operador</span>! 👋
+    </div>
+
+    <div class="dashboard-grid">
+        <a href="index.html" class="card" id="card-ocorrencia">
+            <i class="fas fa-file-medical"></i>
+            <h3>Nova Ocorrência</h3>
+            <p>Registrar novo serviço de poda ou supressão.</p>
+        </a>
+
+        <a href="relatorios.html" class="card" id="card-relatorios">
+            <i class="fas fa-chart-line"></i>
+            <h3>Relatórios</h3>
+            <p>Consultar histórico, filtrar e exportar dados.</p>
+        </a>
+
+        <a href="usuarios.html" class="card" id="card-usuarios">
+            <i class="fas fa-users-cog"></i>
+            <h3>Gerenciar Usuários</h3>
+            <p>Controle de acesso do sistema.</p>
+        </a>
+<a href="vistorias.html" class="card" id="card-vistorias">
+    <i class="fas fa-tools"></i>
+    <h3>Vistorias</h3>
+    <p>Registrar e acompanhar vistorias técnicas.</p>
+</a>
+<a href="relatorios-vistorias.html" class="card" id="card-relatorios-vistorias">
+    <i class="fas fa-clipboard-list"></i>
+    <h3>Relatórios de Vistorias</h3>
+    <p>Consultar e exportar vistorias registradas.</p>
+</a>
+        <a href="login.html" class="card card-exit">
+            <i class="fas fa-sign-out-alt"></i>
+            <h3>Sair</h3>
+            <p>Encerrar sessão com segurança.</p>
+        </a>
+    </div>
+
+    <script>
+        window.onload = () => {
+            // Se não encontrar o usuário logado, vamos criar um perfil padrão de "ADM" para você não ficar travado
+            let user = JSON.parse(localStorage.getItem("usuario"));
+            
+            if (!user) {
+                user = { nome: "Jeferson", nivel: "Gerente Adm" };
+                localStorage.setItem("usuario", JSON.stringify(user));
+            }
+
+            document.getElementById("userName").innerText = user.nome;
+            const nivel = user.nivel;
+
+            // Listas de quem pode ver o quê
+            const podeOcorrencia = ["Gerente Adm", "Superintendente", "Secretario", "Comandante de operacoes", "Chefe de Guarnicao"];
+            const podeRelatorio = ["Gerente Adm", "Superintendente", "Secretario", "Agente adm"];
+            const podeUsuarios = ["Gerente Adm", "Superintendente", "Secretario", "Agente adm"];
+
+            // Lógica para esconder os cards se não tiver permissão
+            if (!podeOcorrencia.includes(nivel)) document.getElementById("card-ocorrencia").style.display = "none";
+            if (!podeRelatorio.includes(nivel)) document.getElementById("card-relatorios").style.display = "none";
+            if (!podeUsuarios.includes(nivel)) document.getElementById("card-usuarios").style.display = "none";
+        };
+    </script>
+    <script>
+    window.onload = () => {
+        // Se não encontrar nada, ele CRIA um Gerente Adm na hora
+        let user = JSON.parse(localStorage.getItem("usuario"));
+        
+        if (!user || !user.nivel) {
+            user = { nome: "Jeferson", nivel: "Gerente Adm" };
+            localStorage.setItem("usuario", JSON.stringify(user));
+        }
+
+        document.getElementById("userName").innerText = user.nome;
+        const nivel = user.nivel;
+
+        // IDs dos elementos
+        const cardOcorrencia = document.getElementById("card-ocorrencia");
+        const cardRelatorios = document.getElementById("card-relatorios");
+        const cardUsuarios = document.getElementById("card-usuarios");
+
+        // LISTA DE QUEM É RESTRITO (Agentes e Chefes)
+        // Se o usuário NÃO for um desses, ele verá TUDO.
+        if (nivel === "Comandante de operacoes" || nivel === "Chefe de Guarnicao") {
+            if (cardRelatorios) cardRelatorios.style.display = "none";
+            if (cardUsuarios) cardUsuarios.style.display = "none";
+        } 
+        else if (nivel === "Agente adm") {
+            if (cardOcorrencia) cardOcorrencia.style.display = "none";
+        }
+        // Se for Gerente Adm, Superintendente ou Secretario, cai aqui e não esconde nada!
+    };
+</script>
+</body>
+</html>
