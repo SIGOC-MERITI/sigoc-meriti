@@ -165,8 +165,30 @@
                 renderizarUsuarios();
             }
         }
+async function carregarUsuarios() {
+    try {
+        const res = await fetch(`${window.location.origin}/usuarios`);
+        const data = await res.json();
 
-        window.onload = renderizarUsuarios;
+        const corpo = document.getElementById("listaUsuarios");
+        corpo.innerHTML = "";
+
+        data.forEach((u, index) => {
+            corpo.innerHTML += `
+                <tr>
+                    <td>${u.nome}</td>
+                    <td>${u.usuario}</td>
+                    <td><b>${u.nivel}</b></td>
+                    <td></td>
+                </tr>
+            `;
+        });
+
+    } catch (err) {
+        console.error("Erro ao carregar usuários:", err);
+    }
+}
+        window.onload = carregarUsuarios;
     </script>
 </body>
 </html>
