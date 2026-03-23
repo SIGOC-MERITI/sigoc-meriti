@@ -90,11 +90,8 @@
     </div>
 
     <script>
-        // Carrega usuários do LocalStorage
         let usuarios = JSON.parse(localStorage.getItem("db_usuarios")) || [];
 
-        // LIMPEZA AUTOMÁTICA DE ERROS ANTIGOS:
-        // Se houver usuários sem senha (antigos), vamos resetar a lista
         if (usuarios.length > 0 && !usuarios[0].senha) {
             console.log("Detectados usuários antigos sem senha. Resetando banco para segurança.");
             usuarios = [{ nome: "Jeferson", usuario: "jeferson.adm", senha: "123", nivel: "Gerente Adm" }];
@@ -125,15 +122,41 @@
                 return alert("Preencha TODOS os campos, inclusive a senha!");
             }
 
-            // Adiciona o usuário completo com senha
-            usuarios.push({ nome, usuario: login, senha, nivel });
-            
-            renderizarUsuarios();
-            
-            // Limpa os campos após sucesso
-            document.getElementById("nomeUser").value = "";
-            document.getElementById("loginUser").value = "";
-            document.getElementById("senhaUser").value = "";
+            // 🔥 ENVIO PARA BACKEND (ADICIONADO)
+            fetch("/usuarios", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    nome: nome,
+                    usuario: login,
+                    senha: senha,
+                    nivel: nivel,
+                    criado_por: "admin"
+                })
+            })
+            .then(res => res.json())
+            .then(dados => {
+                if (dados.erro) {
+                    alert(dados.erro);
+                    return;
+                }
+
+                // comportamento original mantido
+                usuarios.push({ nome, usuario: login, senha, nivel });
+                renderizarUsuarios();
+
+                document.getElementById("nomeUser").value = "";
+                document.getElementById("loginUser").value = "";
+                document.getElementById("senhaUser").value = "";
+
+                alert("Usuário cadastrado com sucesso!");
+            })
+            .catch(err => {
+                console.error(err);
+                alert("Erro ao conectar com servidor");
+            });
         }
 
         function removerUsuario(index) {
@@ -143,7 +166,6 @@
             }
         }
 
-        // Inicia a tabela ao carregar
         window.onload = renderizarUsuarios;
     </script>
 </body>
