@@ -165,18 +165,23 @@ app.get("/usuarios", async (req, res) => {
 app.post("/usuarios", async (req, res) => {
   const { nome, usuario, senha, nivel, criado_por } = req.body;
 
+  console.log("📥 RECEBIDO:", req.body);
+
   try {
     const result = await pool.query(
       "INSERT INTO usuarios (nome,usuario,senha,nivel,criado_por) VALUES ($1,$2,$3,$4,$5) RETURNING id",
       [nome, usuario, senha, nivel, criado_por]
     );
 
+    console.log("✅ INSERIDO ID:", result.rows[0].id);
+
     await registrarLog(criado_por, "Criou usuário " + usuario);
 
     res.json({ sucesso: true, id: result.rows[0].id });
 
   } catch (err) {
-    res.status(500).json({ erro: "Erro ao criar usuário" });
+    console.error("❌ ERRO AO INSERIR:", err);
+    res.status(500).json({ erro: err.message });
   }
 });
 
