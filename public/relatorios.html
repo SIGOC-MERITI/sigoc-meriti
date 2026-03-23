@@ -279,7 +279,32 @@ if (listaFotos.length > 0) {
             XLSX.writeFile(wb, `Relatorio_Ocorrencias_SIGOC.xlsx`);
         }
 
-        window.onload = carregarDados;
+        async function carregarOcorrencias() {
+    try {
+        const res = await fetch(`${window.location.origin}/ocorrencias`);
+        const data = await res.json();
+
+        const corpo = document.getElementById("listaRelatorio"); // CONFERE ESSE ID
+        corpo.innerHTML = "";
+
+        data.forEach((o) => {
+            corpo.innerHTML += `
+                <tr>
+                    <td>${o.data}</td>
+                    <td>${o.equipe}</td>
+                    <td>${o.solicitante}</td>
+                    <td>${o.bairro}</td>
+                    <td>${o.tipo}</td>
+                    <td>${o.quantidade}</td>
+                    <td>${o.status}</td>
+                </tr>
+            `;
+        });
+
+    } catch (err) {
+        console.error("Erro ao carregar ocorrências:", err);
+    }
+}
     </script>
 </body>
 </html>
