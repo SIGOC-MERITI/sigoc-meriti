@@ -167,13 +167,19 @@
         let todasOcorrencias = [];
         let dadosExibidos = [];
 
-        async function carregarDados() {
+        async function carregarOcorrencias() {
             try {
-                let res = await fetch("/ocorrencias");
+                const res = await fetch(`${window.location.origin}/ocorrencias`);
                 todasOcorrencias = await res.json();
                 dadosExibidos = [...todasOcorrencias];
                 renderizarTabela(dadosExibidos);
-            } catch (e) { console.error("Erro ao carregar dados:", e); }
+            } catch (err) {
+                console.error("Erro ao carregar ocorrências:", err);
+            }
+        }
+
+        async function carregarDados() {
+            await carregarOcorrencias();
         }
 
         function renderizarTabela(dados) {
@@ -184,13 +190,13 @@
                 const dataFormatada = item.data && item.data.includes("-") ? item.data.split("-").reverse().join("/") : item.data;
                 corpo.innerHTML += `
                     <tr onclick="mostrarDetalhes(${index})">
-                        <td>${dataFormatada}</td>
-                        <td style="text-transform: uppercase; font-weight:bold;">${item.equipe}</td>
+                        <td>${dataFormatada || "---"}</td>
+                        <td style="text-transform: uppercase; font-weight:bold;">${item.equipe || "---"}</td>
                         <td>${item.solicitante || "---"}</td>
-                        <td>${item.bairro}</td>
-                        <td>${item.tipo}</td>
-                        <td>${item.quantidade}</td>
-                        <td><span class="status-badge ${statusClass}">${item.status}</span></td>
+                        <td>${item.bairro || "---"}</td>
+                        <td>${item.tipo || "---"}</td>
+                        <td>${item.quantidade || "---"}</td>
+                        <td><span class="status-badge ${statusClass}">${item.status || "---"}</span></td>
                     </tr>`;
             });
         }
@@ -199,36 +205,33 @@
             const item = dadosExibidos[index];
             const corpo = document.getElementById("detalhesCorpo");
 
-           let fotosHtml = '';
+            let fotosHtml = '';
+            let listaFotos = [];
 
-// 🔥 NOVA VALIDAÇÃO CORRETA
-let listaFotos = [];
+            if (item.fotos) {
+                listaFotos = String(item.fotos)
+                    .split(',')
+                    .map(f => f.trim())
+                    .filter(f => f.length > 100);
+            }
 
-if (item.fotos) {
-    listaFotos = String(item.fotos)
-        .split(',')
-        .map(f => f.trim())
-        .filter(f => f.length > 100); // só base64 real
-}
+            if (listaFotos.length > 0) {
+                fotosHtml = `
+                    <div class="info-row" style="border-bottom:none">
+                        <b>📷 ANEXOS / FOTOS (Clique para ampliar)</b>
+                        <div class="gallery-container">
+                            ${listaFotos.map(imgData => {
+                                let cleanData = imgData;
 
-if (listaFotos.length > 0) {
-    fotosHtml = `
-        <div class="info-row" style="border-bottom:none">
-            <b>📷 ANEXOS / FOTOS (Clique para ampliar)</b>
-            <div class="gallery-container">
-                ${listaFotos.map(imgData => {
-                    let cleanData = imgData;
+                                if (!cleanData.startsWith('data:image')) {
+                                    cleanData = `data:image/jpeg;base64,${cleanData}`;
+                                }
 
-                    // 🔥 GARANTE PREFIXO
-                    if (!cleanData.startsWith('data:image')) {
-                        cleanData = `data:image/jpeg;base64,${cleanData}`;
-                    }
-
-                    return `<img src="${cleanData}" class="photo-thumb" onclick="event.stopPropagation(); abrirFoto('${cleanData}')">`;
-                }).join('')}
-            </div>
-        </div>`;
-} else {
+                                return `<img src="${cleanData}" class="photo-thumb" onclick="event.stopPropagation(); abrirFoto('${cleanData}')">`;
+                            }).join('')}
+                        </div>
+                    </div>`;
+            } else {
                 fotosHtml = `<div class="info-row"><b>📷 ANEXOS / FOTOS</b><p style="font-size:12px; color:#999;">Nenhuma foto registrada para esta ocorrência.</p></div>`;
             }
 
@@ -249,7 +252,9 @@ if (listaFotos.length > 0) {
             document.getElementById("viewerModal").style.display = "flex";
         }
 
-        function fecharModal() { document.getElementById("modalDetalhes").style.display = "none"; }
+        function fecharModal() {
+            document.getElementById("modalDetalhes").style.display = "none";
+        }
         
         window.onclick = function(event) {
             const modal = document.getElementById("modalDetalhes");
@@ -270,6 +275,7 @@ if (listaFotos.length > 0) {
                 let bateStatus = status === "" || item.status === status;
                 return bateData && bateTipo && bateStatus;
             });
+
             renderizarTabela(dadosExibidos);
         }
 
@@ -279,32 +285,7 @@ if (listaFotos.length > 0) {
             XLSX.writeFile(wb, `Relatorio_Ocorrencias_SIGOC.xlsx`);
         }
 
-        async function carregarOcorrencias() {
-    try {
-        const res = await fetch(`${window.location.origin}/ocorrencias`);
-        const data = await res.json();
-
-        const corpo = document.getElementById("listaRelatorio"); // CONFERE ESSE ID
-        corpo.innerHTML = "";
-
-        data.forEach((o) => {
-            corpo.innerHTML += `
-                <tr>
-                    <td>${o.data}</td>
-                    <td>${o.equipe}</td>
-                    <td>${o.solicitante}</td>
-                    <td>${o.bairro}</td>
-                    <td>${o.tipo}</td>
-                    <td>${o.quantidade}</td>
-                    <td>${o.status}</td>
-                </tr>
-            `;
-        });
-
-    } catch (err) {
-        console.error("Erro ao carregar ocorrências:", err);
-    }
-}
+        window.onload = carregarOcorrencias;
     </script>
 </body>
 </html>
