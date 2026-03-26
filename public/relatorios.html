@@ -58,7 +58,7 @@
 
         .modal-content {
             background-color: white; margin: 2% auto; border-radius: 12px;
-            width: 95%; max-width: 600px; box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            width: 95%; max-width: 680px; box-shadow: 0 10px 25px rgba(0,0,0,0.3);
             overflow: hidden; animation: slideDown 0.3s ease-out;
         }
 
@@ -71,15 +71,47 @@
         .info-row { margin-bottom: 15px; border-bottom: 1px solid #f0f0f0; padding-bottom: 10px; }
         .info-row b { color: var(--primary-blue); display: block; font-size: 11px; text-transform: uppercase; margin-bottom: 5px; letter-spacing: 1px; }
 
-        .desc-box { background: #f9f9f9; padding: 12px; border-radius: 6px; border-left: 4px solid var(--accent-orange); font-style: italic; white-space: pre-wrap; line-height: 1.4; }
+        .desc-box {
+            background: #f9f9f9;
+            padding: 12px;
+            border-radius: 6px;
+            border-left: 4px solid var(--accent-orange);
+            font-style: italic;
+            white-space: pre-wrap;
+            line-height: 1.5;
+        }
 
-        /* GALERIA AJUSTADA */
+        .info-card {
+            background: #fafbfd;
+            border: 1px solid #eef1f5;
+            border-left: 4px solid var(--primary-blue);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 12px;
+        }
+
+        .info-card strong {
+            display: block;
+            color: var(--primary-blue);
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 6px;
+        }
+
+        .info-card span {
+            color: #333;
+            line-height: 1.5;
+        }
+
+        /* GALERIA */
         .gallery-container { 
             display: grid; 
             grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); 
             gap: 12px; 
             margin-top: 10px; 
         }
+
         .photo-thumb { 
             width: 100%; 
             height: 140px; 
@@ -89,6 +121,7 @@
             cursor: pointer;
             transition: transform 0.2s;
         }
+
         .photo-thumb:hover { transform: scale(1.03); border-color: var(--accent-orange); }
 
         /* VISUALIZADOR DE FOTO CHEIA */
@@ -232,15 +265,51 @@
                         </div>
                     </div>`;
             } else {
-                fotosHtml = `<div class="info-row"><b>📷 ANEXOS / FOTOS</b><p style="font-size:12px; color:#999;">Nenhuma foto registrada para esta ocorrência.</p></div>`;
+                fotosHtml = `
+                    <div class="info-row">
+                        <b>📷 ANEXOS / FOTOS</b>
+                        <p style="font-size:12px; color:#999;">Nenhuma foto registrada para esta ocorrência.</p>
+                    </div>`;
             }
 
+            const enderecoTexto = item.endereco ? item.endereco : "Não informado";
+            const bairroTexto = item.bairro ? item.bairro : "Não informado";
+            const equipeTexto = item.equipe ? item.equipe.toUpperCase() : "NÃO INFORMADA";
+            const solicitanteTexto = item.solicitante ? item.solicitante : "Não informado";
+            const cpfTexto = item.cpf ? item.cpf : "Não informado";
+            const descricaoTexto = item.descricao ? item.descricao : "Sem observações adicionais.";
+
             corpo.innerHTML = `
-                <div class="info-row"><b>📍 ENDEREÇO</b> ${item.endereco || "Não informado"}</div>
-                <div class="info-row"><b>🏘️ BAIRRO</b> ${item.bairro || "Não informado"}</div>
-                <div class="info-row"><b>📋 DESCRIÇÃO DO SERVIÇO</b><div class="desc-box">${item.descricao || "Sem observações adicionais."}</div></div>
-                <div class="info-row"><b>👤 SOLICITANTE / CPF</b> ${item.solicitante || "Não informado"} ${item.cpf ? ' - ' + item.cpf : ''}</div>
-                <div class="info-row"><b>🚛 EQUIPE RESPONSÁVEL</b> ALA ${(item.equipe || "").toUpperCase()}</div>
+                <div class="info-card">
+                    <strong>📍 Endereço</strong>
+                    <span>${enderecoTexto}</span>
+                </div>
+
+                <div class="info-card">
+                    <strong>🏘️ Bairro</strong>
+                    <span>${bairroTexto}</span>
+                </div>
+
+                <div class="info-card">
+                    <strong>🚛 Equipe Responsável</strong>
+                    <span>${equipeTexto}</span>
+                </div>
+
+                <div class="info-card">
+                    <strong>👤 Solicitante</strong>
+                    <span>${solicitanteTexto}</span>
+                </div>
+
+                <div class="info-card">
+                    <strong>🪪 CPF</strong>
+                    <span>${cpfTexto}</span>
+                </div>
+
+                <div class="info-row">
+                    <b>📝 Descrição do Serviço</b>
+                    <div class="desc-box">${descricaoTexto}</div>
+                </div>
+
                 ${fotosHtml}
             `;
             document.getElementById("modalDetalhes").style.display = "block";
