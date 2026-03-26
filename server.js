@@ -154,7 +154,7 @@ app.post("/login", async (req, res) => {
 app.get("/usuarios", async (req, res) => {
   try {
     const result = await pool.query(
-      "SELECT id,nome,usuario,nivel,criado_por,data_criacao,ativo FROM usuarios"
+      "SELECT id,nome,usuario,nivel,criado_por,data_criacao,ativo FROM usuarios ORDER BY id ASC"
     );
     res.json(result.rows);
   } catch (err) {
@@ -181,6 +181,58 @@ app.post("/usuarios", async (req, res) => {
 
   } catch (err) {
     console.error("❌ ERRO AO INSERIR:", err);
+    res.status(500).json({ erro: err.message });
+  }
+});
+
+/* ================================
+   EDITAR USUÁRIO
+================================ */
+app.put("/usuarios/:id", async (req, res) => {
+  const id = req.params.id;
+  const { nome, usuario, senha, nivel, alterado_por } = req.body;
+
+  try {
+    const usuarioAtual = await pool.query(
+      "SELECT * FROM usuarios WHERE id=$1",
+      [id]
+    );
+
+    if (!usuarioAtual.rows[0]) {
+      return res.status(404).json({ erro: "Usuário não encontrado" });
+    }
+
+    const atual = usuarioAtual.rows[0];
+
+    if (atual.usuario === "admin" && usuario && usuario !== "admin") {
+      return res.status(400).json({ erro: "Não é permitido alterar o login do admin" });
+    }
+
+    const novoNome = nome ?? atual.nome;
+    const novoUsuario = usuario ?? atual.usuario;
+    const novaSenha = senha && senha.trim() !== "" ? senha : atual.senha;
+    const novoNivel = nivel ?? atual.nivel;
+
+    const result = await pool.query(
+      `UPDATE usuarios
+       SET nome=$1, usuario=$2, senha=$3, nivel=$4
+       WHERE id=$5
+       RETURNING id,nome,usuario,nivel`,
+      [novoNome, novoUsuario, novaSenha, novoNivel, id]
+    );
+
+    await registrarLog(
+      alterado_por || "sistema",
+      "Editou usuário " + atual.usuario
+    );
+
+    res.json({
+      sucesso: true,
+      usuario: result.rows[0]
+    });
+
+  } catch (err) {
+    console.error("❌ ERRO AO EDITAR:", err);
     res.status(500).json({ erro: err.message });
   }
 });

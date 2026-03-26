@@ -38,7 +38,9 @@
         table { width: 100%; border-collapse: collapse; }
         th { background: #eee; padding: 12px; text-align: left; font-size: 14px; color: var(--primary-blue); }
         td { padding: 12px; border-bottom: 1px solid #f0f0f0; font-size: 14px; }
+        .acoes-wrap { display: flex; gap: 10px; align-items: center; }
         .btn-delete { color: #d32f2f; cursor: pointer; border: none; background: none; font-size: 18px; }
+        .btn-edit { color: var(--primary-blue); cursor: pointer; border: none; background: none; font-size: 18px; }
     </style>
 </head>
 <body>
@@ -106,7 +108,12 @@
                     <td>${u.nome}</td>
                     <td>${u.usuario}</td>
                     <td><b>${u.nivel}</b></td>
-                    <td><button class="btn-delete" onclick="removerUsuario(${index})"><i class="fas fa-trash"></i></button></td>
+                    <td>
+                        <div class="acoes-wrap">
+                            <button class="btn-edit" onclick="editarUsuario(${index})"><i class="fas fa-pen"></i></button>
+                            <button class="btn-delete" onclick="removerUsuario(${index})"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </td>
                 </tr>`;
             });
             localStorage.setItem("db_usuarios", JSON.stringify(usuarios));
@@ -122,7 +129,6 @@
                 return alert("Preencha TODOS os campos, inclusive a senha!");
             }
 
-            // 🔥 ENVIO PARA BACKEND (ADICIONADO)
             fetch("/usuarios", {
                 method: "POST",
                 headers: {
@@ -143,7 +149,6 @@
                     return;
                 }
 
-                // comportamento original mantido
                 usuarios.push({ nome, usuario: login, senha, nivel });
                 renderizarUsuarios();
 
@@ -152,6 +157,7 @@
                 document.getElementById("senhaUser").value = "";
 
                 alert("Usuário cadastrado com sucesso!");
+                carregarUsuarios();
             })
             .catch(err => {
                 console.error(err);
@@ -160,34 +166,81 @@
         }
 
         function removerUsuario(index) {
+            const usuario = usuarios[index];
+
+            if (!usuario || !usuario.id) {
+                if(confirm("Deseja remover este acesso?")) {
+                    usuarios.splice(index, 1);
+                    renderizarUsuarios();
+                }
+                return;
+            }
+
             if(confirm("Deseja remover este acesso?")) {
-                usuarios.splice(index, 1);
-                renderizarUsuarios();
+                fetch(`${window.location.origin}/usuarios/${usuario.id}`, {
+                    method: "DELETE"
+                })
+                .then(res => res.json())
+                .then(dados => {
+                    if (dados.erro) {
+                        alert(dados.erro);
+                        return;
+                    }
+
+                    usuarios.splice(index, 1);
+                    renderizarUsuarios();
+                    carregarUsuarios();
+                })
+                .catch(err => {
+                    console.error("Erro ao remover usuário:", err);
+                    alert("Erro ao conectar com servidor");
+                });
             }
         }
-async function carregarUsuarios() {
-    try {
-        const res = await fetch(`${window.location.origin}/usuarios`);
-        const data = await res.json();
 
-        const corpo = document.getElementById("listaUsuarios");
-        corpo.innerHTML = "";
+        function editarUsuario(index) {
+            const usuario = usuarios[index];
+            if (!usuario) return;
 
-        data.forEach((u, index) => {
-            corpo.innerHTML += `
-                <tr>
-                    <td>${u.nome}</td>
-                    <td>${u.usuario}</td>
-                    <td><b>${u.nivel}</b></td>
-                    <td></td>
-                </tr>
-            `;
-        });
+            document.getElementById("nomeUser").value = usuario.nome || "";
+            document.getElementById("loginUser").value = usuario.usuario || "";
+            document.getElementById("senhaUser").value = usuario.senha || "";
+            document.getElementById("nivelUser").value = usuario.nivel || "Gerente Adm";
 
-    } catch (err) {
-        console.error("Erro ao carregar usuários:", err);
-    }
-}
+            alert("Dados carregados no formulário. Na próxima etapa vamos salvar a edição direto no banco.");
+        }
+
+        async function carregarUsuarios() {
+            try {
+                const res = await fetch(`${window.location.origin}/usuarios`);
+                const data = await res.json();
+
+                usuarios = data;
+
+                const corpo = document.getElementById("listaUsuarios");
+                corpo.innerHTML = "";
+
+                data.forEach((u, index) => {
+                    corpo.innerHTML += `
+                        <tr>
+                            <td>${u.nome}</td>
+                            <td>${u.usuario}</td>
+                            <td><b>${u.nivel}</b></td>
+                            <td>
+                                <div class="acoes-wrap">
+                                    <button class="btn-edit" onclick="editarUsuario(${index})"><i class="fas fa-pen"></i></button>
+                                    <button class="btn-delete" onclick="removerUsuario(${index})"><i class="fas fa-trash"></i></button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                });
+
+            } catch (err) {
+                console.error("Erro ao carregar usuários:", err);
+            }
+        }
+
         window.onload = carregarUsuarios;
     </script>
 </body>
