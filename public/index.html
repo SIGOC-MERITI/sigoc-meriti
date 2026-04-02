@@ -101,6 +101,10 @@
 
         <label>Nome do solicitante</label><input type="text" id="solicitante">
         <label>CPF do solicitante</label><input type="text" id="cpf">
+<div class="input-group" id="grupoDataRetroativa" style="display:none;">
+    <label>Data da ocorrência</label>
+    <input type="date" id="dataRetroativa">
+</div>
 
         <button id="btnSalvar" class="btn-save" onclick="salvarPlantao()">✅ SALVAR NO SISTEMA</button>
         <button id="btnZap" class="btn-whatsapp" onclick="gerarECompartilhar()" style="display:none;">
@@ -192,73 +196,107 @@
             };
             input.click();
         }
+function formatarDataRetroativaParaBR(dataIso) {
+    if (!dataIso) return "";
+    const [ano, mes, dia] = dataIso.split("-");
+    return `${dia}/${mes}/${ano}`;
+}
 
-        async function salvarPlantao() {
-            const alaSel = document.getElementById("ala");
-            if(!alaSel.value) return alert("Selecione a ALA!");
-            
-            const btn = document.getElementById("btnSalvar");
-            btn.innerText = "⌛ SALVANDO NO SISTEMA..."; btn.disabled = true;
+function configurarPermissaoRetroativa() {
+    const usuarioLogado = JSON.parse(localStorage.getItem("usuario") || "{}");
+    const grupoDataRetroativa = document.getElementById("grupoDataRetroativa");
 
-            const dados = {
-                data: new Date().toLocaleDateString('pt-BR'),
-                equipe: alaSel.options[alaSel.selectedIndex].text,
-                tipo: document.getElementById("tipoServico").value,
-                subtipo: document.getElementById("subTipoPoda").value || "",
-                quantidade: document.getElementById("quantidade").value == "6+" ? document.getElementById("quantidadeExtra").value : document.getElementById("quantidade").value,
-                descricao: document.getElementById("descricao").value,
-                status: document.getElementById("status").value,
-                endereco, bairro,
-                solicitante: document.getElementById("solicitante").value,
-                cpf: document.getElementById("cpf").value,
-                // Aqui juntamos todas as fotos comprimidas
-                fotos: [...fotosPapeleta.inicio, ...fotosPapeleta.meio, ...fotosPapeleta.fim].join(",")
-            };
+    if (!grupoDataRetroativa) return;
 
-            try {
-                const response = await fetch(`${window.location.origin}/ocorrencias`, {
-                    method: "POST", 
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(dados)
-                });
+    if (usuarioLogado.pode_retroativa === true) {
+        grupoDataRetroativa.style.display = "block";
+    } else {
+        grupoDataRetroativa.style.display = "none";
+    }
+}
 
-                if(response.ok) {
-                    alert("✅ SALVO COM SUCESSO!");
-                    document.getElementById("btnZap").style.display = "flex";
-                } else { 
-                    // Se der erro 413 (Payload Too Large), cai aqui
-                    alert("Erro: Fotos pesadas demais. O sistema limpou as fotos para você tentar novamente com menos imagens."); 
-                    fotosPapeleta = { inicio: [], meio: [], fim: [] };
-                    document.getElementById("inicioContainer").innerHTML = "";
-                    document.getElementById("meioContainer").innerHTML = "";
-                    document.getElementById("fimContainer").innerHTML = "";
-                }
-            } catch (error) { 
-                alert("Erro de conexão com o servidor. Verifique se o server.js está rodando."); 
-            }
-            btn.innerText = "✅ SALVAR NO SISTEMA"; btn.disabled = false;
+document.addEventListener("DOMContentLoaded", configurarPermissaoRetroativa);
+
+async function salvarPlantao() {
+    const alaSel = document.getElementById("ala");
+    if (!alaSel.value) return alert("Selecione a ALA!");
+
+    const usuarioLogado = JSON.parse(localStorage.getItem("usuario") || "{}");
+    const podeRetroativa = usuarioLogado.pode_retroativa === true;
+    const dataRetroativaInput = document.getElementById("dataRetroativa");
+    const dataInformada = dataRetroativaInput ? dataRetroativaInput.value : "";
+
+    const btn = document.getElementById("btnSalvar");
+    btn.innerText = "⌛ SALVANDO NO SISTEMA...";
+    btn.disabled = true;
+
+    const dataFinal = (podeRetroativa && dataInformada)
+        ? formatarDataRetroativaParaBR(dataInformada)
+        : new Date().toLocaleDateString("pt-BR");
+
+    const dados = {
+        data: dataFinal,
+        equipe: alaSel.options[alaSel.selectedIndex].text,
+        tipo: document.getElementById("tipoServico").value,
+        subtipo: document.getElementById("subTipoPoda").value || "",
+        quantidade: document.getElementById("quantidade").value == "6+"
+            ? document.getElementById("quantidadeExtra").value
+            : document.getElementById("quantidade").value,
+        descricao: document.getElementById("descricao").value,
+        status: document.getElementById("status").value,
+        endereco,
+        bairro,
+        solicitante: document.getElementById("solicitante").value,
+        cpf: document.getElementById("cpf").value,
+        usuario: usuarioLogado.usuario || "",
+        pode_retroativa: podeRetroativa,
+        fotos: [...fotosPapeleta.inicio, ...fotosPapeleta.meio, ...fotosPapeleta.fim].join(",")
+    };
+
+    try {
+        const response = await fetch(`${window.location.origin}/ocorrencias`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(dados)
+        });
+
+        if (response.ok) {
+            alert("✅ SALVO COM SUCESSO!");
+            document.getElementById("btnZap").style.display = "flex";
+        } else {
+            alert("Erro: Fotos pesadas demais. O sistema limpou as fotos para você tentar novamente com menos imagens.");
+            fotosPapeleta = { inicio: [], meio: [], fim: [] };
+            document.getElementById("inicioContainer").innerHTML = "";
+            document.getElementById("meioContainer").innerHTML = "";
+            document.getElementById("fimContainer").innerHTML = "";
         }
+    } catch (error) {
+        alert("Erro de conexão com o servidor. Verifique se o server.js está rodando.");
+    }
 
-        async function gerarECompartilhar() {
-            const alaSel = document.getElementById('ala');
-            document.getElementById('p-data').innerText = new Date().toLocaleString('pt-BR');
-            document.getElementById('p-ala').innerText = alaSel.options[alaSel.selectedIndex].text;
-            document.getElementById('p-tipo').innerText = document.getElementById('tipoServico').value;
-            document.getElementById('p-subtipo').innerText = document.getElementById('subTipoPoda').value ? `(${document.getElementById('subTipoPoda').value})` : "";
-            document.getElementById('p-local').innerText = `${endereco} - ${bairro}`;
-            document.getElementById('p-solicitante').innerText = document.getElementById('solicitante').value;
-            document.getElementById('p-desc').innerText = document.getElementById('descricao').value;
+    btn.innerText = "✅ SALVAR NO SISTEMA";
+    btn.disabled = false;
+}
 
-            ['inicio', 'meio', 'fim'].forEach(t => {
-                const box = document.getElementById(`p-box-${t}`);
-                box.querySelectorAll('img').forEach(i => i.remove());
-                fotosPapeleta[t].forEach(src => { 
-                    let i = new Image(); 
-                    i.src = src; 
-                    box.appendChild(i); 
-                });
-            });
+async function gerarECompartilhar() {
+    const alaSel = document.getElementById('ala');
+    document.getElementById('p-data').innerText = new Date().toLocaleString('pt-BR');
+    document.getElementById('p-ala').innerText = alaSel.options[alaSel.selectedIndex].text;
+    document.getElementById('p-tipo').innerText = document.getElementById('tipoServico').value;
+    document.getElementById('p-subtipo').innerText = document.getElementById('subTipoPoda').value ? `(${document.getElementById('subTipoPoda').value})` : "";
+    document.getElementById('p-local').innerText = `${endereco} - ${bairro}`;
+    document.getElementById('p-solicitante').innerText = document.getElementById('solicitante').value;
+    document.getElementById('p-desc').innerText = document.getElementById('descricao').value;
 
+    ['inicio', 'meio', 'fim'].forEach(t => {
+        const box = document.getElementById(`p-box-${t}`);
+        box.querySelectorAll('img').forEach(i => i.remove());
+        fotosPapeleta[t].forEach(src => {
+            let i = new Image();
+            i.src = src;
+            box.appendChild(i);
+        });
+    });
             const canvas = await html2canvas(document.getElementById('papeleta-digital'), { 
                 scale: 1, // Escala 1 para não aumentar o peso do arquivo final
                 useCORS: true 

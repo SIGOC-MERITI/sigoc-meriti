@@ -72,6 +72,14 @@
                     <option value="Comandante de operacoes">Comandante de Operações (Ocorrências)</option>
                     <option value="Chefe de Guarnicao">Chefe de Guarnição (Ocorrências)</option>
                 </select>
+                </div>
+
+<div class="input-group">
+    <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+        <input type="checkbox" id="podeRetroativaUser">
+        Permitir cadastro de ocorrência retroativa
+    </label>
+</div>
             </div>
             <button class="btn-add" onclick="adicionarUsuario()">CADASTRAR USUÁRIO</button>
         </div>
@@ -120,34 +128,36 @@
         }
 
         function adicionarUsuario() {
-            const nome = document.getElementById("nomeUser").value;
-            const login = document.getElementById("loginUser").value;
-            const senha = document.getElementById("senhaUser").value;
-            const nivel = document.getElementById("nivelUser").value;
+    const nome = document.getElementById("nomeUser").value;
+    const login = document.getElementById("loginUser").value;
+    const senha = document.getElementById("senhaUser").value;
+    const nivel = document.getElementById("nivelUser").value;
+    const podeRetroativa = document.getElementById("podeRetroativaUser").checked;
 
-            if(!nome || !login || !senha) {
-                return alert("Preencha TODOS os campos, inclusive a senha!");
-            }
+    if (!nome || !login || !senha) {
+        return alert("Preencha TODOS os campos, inclusive a senha!");
+    }
 
-            fetch("/usuarios", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    nome: nome,
-                    usuario: login,
-                    senha: senha,
-                    nivel: nivel,
-                    criado_por: "admin"
-                })
-            })
-            .then(res => res.json())
-            .then(dados => {
-                if (dados.erro) {
-                    alert(dados.erro);
-                    return;
-                }
+    fetch("/usuarios", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            nome: nome,
+            usuario: login,
+            senha: senha,
+            nivel: nivel,
+            pode_retroativa: podeRetroativa,
+            criado_por: "admin"
+        })
+    })
+    .then(res => res.json())
+    .then(dados => {
+        if (dados.erro) {
+            alert(dados.erro);
+            return;
+        }
 
                 usuarios.push({ nome, usuario: login, senha, nivel });
                 renderizarUsuarios();

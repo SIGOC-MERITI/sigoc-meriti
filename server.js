@@ -141,7 +141,8 @@ app.post("/login", async (req, res) => {
       id: row.id,
       usuario: row.usuario,
       nivel: row.nivel,
-      nome: row.nome
+      nome: row.nome,
+      pode_retroativa: row.pode_retroativa
     });
 
   } catch (err) {
@@ -165,14 +166,15 @@ app.get("/usuarios", async (req, res) => {
 });
 
 app.post("/usuarios", async (req, res) => {
-  const { nome, usuario, senha, nivel, criado_por } = req.body;
+  const { nome, usuario, senha, nivel, pode_retroativa, criado_por } = req.body;
 
   console.log("📥 RECEBIDO:", req.body);
 
   try {
     const result = await pool.query(
-      "INSERT INTO usuarios (nome,usuario,senha,nivel,criado_por) VALUES ($1,$2,$3,$4,$5) RETURNING id",
-      [nome, usuario, senha, nivel, criado_por]
+      `INSERT INTO usuarios (nome, usuario, senha, nivel, pode_retroativa, criado_por)
+       VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`,
+      [nome, usuario, senha, nivel, pode_retroativa ?? false, criado_por]
     );
 
     console.log("✅ INSERIDO ID:", result.rows[0].id);
@@ -284,7 +286,7 @@ app.post("/ocorrencias", async (req, res) => {
   cpf,
   usuario,
   fotos,
-  nivel
+  pode_retroativa
 } = req.body;
 
   if (!tipo || !equipe) {
@@ -297,7 +299,7 @@ app.post("/ocorrencias", async (req, res) => {
 
     // Só superadmin pode cadastrar ocorrência retroativa
     const dataFinal =
-  nivel === "superadmin" && data
+  pode_retroativa === true && data
     ? data
     : dataAtualServidor;
 
@@ -322,7 +324,7 @@ app.post("/ocorrencias", async (req, res) => {
     );
 
     const textoLog =
-  nivel === "superadmin" && data
+  pode_retroativa === true && data
     ? `Registrou ocorrência retroativa ${tipo} em ${bairro}`
     : `Registrou ocorrência ${tipo} em ${bairro}`;
 

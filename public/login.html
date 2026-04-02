@@ -83,14 +83,14 @@ async function realizarLogin() {
 
         const dados = await resposta.json();
 
-        if (resposta.ok) {
+       if (resposta.ok) {
     localStorage.setItem("usuario", JSON.stringify({
         id: dados.id,
         usuario: dados.usuario,
         nome: dados.nome,
-        nivel: dados.nivel
+        nivel: dados.nivel,
+        pode_retroativa: dados.pode_retroativa
     }));
-
     window.location.href = "admin.html";
 } else {
             alert(dados.erro || "Usuário ou senha incorretos!");
