@@ -274,20 +274,20 @@ app.delete("/usuarios/:id", async (req, res) => {
 ================================ */
 app.post("/ocorrencias", async (req, res) => {
   const {
-  data,
-  equipe,
-  tipo,
-  quantidade,
-  descricao,
-  status,
-  endereco,
-  bairro,
-  solicitante,
-  cpf,
-  usuario,
-  fotos,
-  pode_retroativa
-} = req.body;
+    data,
+    equipe,
+    tipo,
+    quantidade,
+    descricao,
+    status,
+    endereco,
+    bairro,
+    solicitante,
+    cpf,
+    usuario,
+    fotos,
+    pode_retroativa
+  } = req.body;
 
   if (!tipo || !equipe) {
     return res.status(400).json({ erro: "Dados incompletos" });
@@ -296,11 +296,10 @@ app.post("/ocorrencias", async (req, res) => {
   try {
     const dataAtualServidor = new Date().toLocaleDateString("pt-BR");
 
-    // Só superadmin pode cadastrar ocorrência retroativa
     const dataFinal =
-  pode_retroativa === true && data
-    ? data
-    : dataAtualServidor;
+      pode_retroativa === true && data
+        ? data
+        : dataAtualServidor;
 
     const result = await pool.query(
       `INSERT INTO ocorrencias 
@@ -323,9 +322,9 @@ app.post("/ocorrencias", async (req, res) => {
     );
 
     const textoLog =
-  pode_retroativa === true && data
-    ? `Registrou ocorrência retroativa ${tipo} em ${bairro}`
-    : `Registrou ocorrência ${tipo} em ${bairro}`;
+      pode_retroativa === true && data
+        ? `Registrou ocorrência retroativa ${tipo} em ${bairro}`
+        : `Registrou ocorrência ${tipo} em ${bairro}`;
 
     await registrarLog(usuario, textoLog);
 
@@ -334,6 +333,18 @@ app.post("/ocorrencias", async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ erro: "Erro ao salvar ocorrência" });
+  }
+});
+
+app.get("/ocorrencias", async (req, res) => {
+  try {
+    const result = await pool.query(
+      "SELECT * FROM ocorrencias ORDER BY id DESC"
+    );
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ erro: "Erro ao buscar ocorrências" });
   }
 });
 
