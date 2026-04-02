@@ -138,12 +138,14 @@ app.post("/login", async (req, res) => {
     await registrarLog(row.usuario, "Login no sistema");
 
     res.json({
+      id: row.id,
       usuario: row.usuario,
       nivel: row.nivel,
       nome: row.nome
     });
 
   } catch (err) {
+    console.error(err);
     res.status(500).json({ erro: "Erro no banco de dados" });
   }
 });
@@ -270,41 +272,67 @@ app.delete("/usuarios/:id", async (req, res) => {
 ================================ */
 app.post("/ocorrencias", async (req, res) => {
   const {
-    data, equipe, tipo, quantidade,
-    descricao, status, endereco, bairro,
-    solicitante, cpf, usuario, fotos
-  } = req.body;
+  data,
+  equipe,
+  tipo,
+  quantidade,
+  descricao,
+  status,
+  endereco,
+  bairro,
+  solicitante,
+  cpf,
+  usuario,
+  fotos,
+  nivel
+} = req.body;
 
   if (!tipo || !equipe) {
     return res.status(400).json({ erro: "Dados incompletos" });
   }
 
   try {
+    const agora = new Date();
+    const dataAtualServidor = agora.toISOString();
+
+    // Só superadmin pode cadastrar ocorrência retroativa
+    const dataFinal =
+  nivel === "superadmin" && data
+    ? data
+    : dataAtualServidor;
+
     const result = await pool.query(
       `INSERT INTO ocorrencias 
-      (data,equipe,tipo,quantidade,descricao,status,endereco,bairro,solicitante,cpf,usuario,fotos) 
+      (data, equipe, tipo, quantidade, descricao, status, endereco, bairro, solicitante, cpf, usuario, fotos) 
       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) RETURNING id`,
-      [data, equipe, tipo, quantidade, descricao, status, endereco, bairro, solicitante, cpf, usuario, fotos]
+      [
+        dataFinal,
+        equipe,
+        tipo,
+        quantidade,
+        descricao,
+        status,
+        endereco,
+        bairro,
+        solicitante,
+        cpf,
+        usuario,
+        fotos
+      ]
     );
 
-    await registrarLog(usuario, `Registrou ocorrência ${tipo} em ${bairro}`);
+    const textoLog =
+  nivel === "superadmin" && data
+    ? `Registrou ocorrência retroativa ${tipo} em ${bairro}`
+    : `Registrou ocorrência ${tipo} em ${bairro}`;
+
+    await registrarLog(usuario, textoLog);
 
     res.json({ sucesso: true, id: result.rows[0].id });
 
   } catch (err) {
     console.error(err);
     res.status(500).json({ erro: "Erro ao salvar ocorrência" });
-  }
-});
-
-app.get("/ocorrencias", async (req, res) => {
-  try {
-    const result = await pool.query(
-      "SELECT * FROM ocorrencias ORDER BY id DESC"
-    );
-    res.json(result.rows);
-  } catch (err) {
-    res.status(500).json({ erro: "Erro ao buscar ocorrências" });
   }
 });
 
