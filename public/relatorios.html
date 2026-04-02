@@ -201,15 +201,20 @@
         let dadosExibidos = [];
 
         async function carregarOcorrencias() {
-            try {
-                const res = await fetch(`${window.location.origin}/ocorrencias`);
-                todasOcorrencias = await res.json();
-                dadosExibidos = [...todasOcorrencias];
-                renderizarTabela(dadosExibidos);
-            } catch (err) {
-                console.error("Erro ao carregar ocorrências:", err);
-            }
+    try {
+        const res = await fetch(`${window.location.origin}/ocorrencias`);
+
+        if (!res.ok) {
+            throw new Error(`Erro HTTP ${res.status}`);
         }
+
+        todasOcorrencias = await res.json();
+        dadosExibidos = [...todasOcorrencias];
+        renderizarTabela(dadosExibidos);
+    } catch (err) {
+        console.error("Erro ao carregar ocorrências:", err);
+    }
+}
 
         async function carregarDados() {
             await carregarOcorrencias();
