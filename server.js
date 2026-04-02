@@ -294,8 +294,7 @@ app.post("/ocorrencias", async (req, res) => {
   }
 
   try {
-    const agora = new Date();
-    const dataAtualServidor = agora.toISOString();
+    const dataAtualServidor = new Date().toLocaleDateString("pt-BR");
 
     // Só superadmin pode cadastrar ocorrência retroativa
     const dataFinal =
