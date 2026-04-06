@@ -219,25 +219,64 @@
         async function carregarDados() {
             await carregarOcorrencias();
         }
+       
 
-        function renderizarTabela(dados) {
-            const corpo = document.getElementById("tabelaCorpo");
-            corpo.innerHTML = "";
-            dados.forEach((item, index) => {
-                const statusClass = item.status === "Finalizado" ? "status-finalizado" : "status-andamento";
-                const dataFormatada = item.data && item.data.includes("-") ? item.data.split("-").reverse().join("/") : item.data;
-                corpo.innerHTML += `
-                    <tr onclick="mostrarDetalhes(${index})">
-                        <td>${dataFormatada || "---"}</td>
-                        <td style="text-transform: uppercase; font-weight:bold;">${item.equipe || "---"}</td>
-                        <td>${item.solicitante || "---"}</td>
-                        <td>${item.bairro || "---"}</td>
-                        <td>${item.tipo || "---"}</td>
-                        <td>${item.quantidade || "---"}</td>
-                        <td><span class="status-badge ${statusClass}">${item.status || "---"}</span></td>
-                    </tr>`;
-            });
+        function normalizarData(data) {
+    if (!data) return null;
+
+    const dt = new Date(data);
+    if (!isNaN(dt.getTime())) {
+        return dt;
+    }
+
+    if (typeof data === "string" && data.includes("/")) {
+        const partes = data.split("/");
+        if (partes.length === 3) {
+            const [dia, mes, ano] = partes;
+            const dataConvertida = new Date(`${ano}-${mes}-${dia}T00:00:00`);
+            if (!isNaN(dataConvertida.getTime())) {
+                return dataConvertida;
+            }
         }
+    }
+
+    return null;
+}
+
+function formatarDataBR(data) {
+    const dt = normalizarData(data);
+    if (!dt) return "---";
+
+    const dia = String(dt.getDate()).padStart(2, "0");
+    const mes = String(dt.getMonth() + 1).padStart(2, "0");
+    const ano = dt.getFullYear();
+
+    return `${dia}/${mes}/${ano}`;
+}
+
+function renderizarTabela(dados) {
+    const corpo = document.getElementById("tabelaCorpo");
+    corpo.innerHTML = "";
+
+    dados.forEach((item, index) => {
+        const statusClass = item.status === "Finalizado"
+            ? "status-finalizado"
+            : "status-andamento";
+
+        const dataFormatada = formatarDataBR(item.data);
+
+        corpo.innerHTML += `
+            <tr onclick="mostrarDetalhes(${index})">
+                <td>${dataFormatada}</td>
+                <td style="text-transform: uppercase; font-weight:bold;">${item.equipe || "---"}</td>
+                <td>${item.solicitante || "---"}</td>
+                <td>${item.bairro || "---"}</td>
+                <td>${item.tipo || "---"}</td>
+                <td>${item.quantidade || "---"}</td>
+                <td><span class="status-badge ${statusClass}">${item.status || "---"}</span></td>
+            </tr>`;
+    });
+}
 
         function mostrarDetalhes(index) {
             const item = dadosExibidos[index];
@@ -336,22 +375,29 @@
         }
 
         function aplicarFiltros() {
-            const dtInicio = document.getElementById("dataInicio").value;
-            const dtFim = document.getElementById("dataFim").value;
-            const tipo = document.getElementById("filtroTipo").value;
-            const status = document.getElementById("filtroStatus").value;
+    const dtInicio = document.getElementById("dataInicio").value;
+    const dtFim = document.getElementById("dataFim").value;
+    const tipo = document.getElementById("filtroTipo").value;
+    const status = document.getElementById("filtroStatus").value;
 
-            dadosExibidos = todasOcorrencias.filter(item => {
-                let bateData = true;
-                if (dtInicio && item.data < dtInicio) bateData = false;
-                if (dtFim && item.data > dtFim) bateData = false;
-                let bateTipo = tipo === "" || item.tipo === tipo;
-                let bateStatus = status === "" || item.status === status;
-                return bateData && bateTipo && bateStatus;
-            });
+    const dataInicioObj = dtInicio ? new Date(`${dtInicio}T00:00:00`) : null;
+    const dataFimObj = dtFim ? new Date(`${dtFim}T23:59:59`) : null;
 
-            renderizarTabela(dadosExibidos);
-        }
+    dadosExibidos = todasOcorrencias.filter(item => {
+        const dataItem = normalizarData(item.data);
+        let bateData = true;
+
+        if (dtInicio && (!dataItem || dataItem < dataInicioObj)) bateData = false;
+        if (dtFim && (!dataItem || dataItem > dataFimObj)) bateData = false;
+
+        const bateTipo = tipo === "" || item.tipo === tipo;
+        const bateStatus = status === "" || item.status === status;
+
+        return bateData && bateTipo && bateStatus;
+    });
+
+    renderizarTabela(dadosExibidos);
+}
 
         function exportarExcel() {
             const tabela = document.getElementById("tabelaRelatorio");
