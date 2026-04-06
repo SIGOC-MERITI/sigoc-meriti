@@ -224,23 +224,38 @@
         function normalizarData(data) {
     if (!data) return null;
 
-    const dt = new Date(data);
-    if (!isNaN(dt.getTime())) {
-        return dt;
+    if (typeof data !== "string") {
+        const dt = new Date(data);
+        return isNaN(dt.getTime()) ? null : dt;
     }
 
-    if (typeof data === "string" && data.includes("/")) {
-        const partes = data.split("/");
+    const dataLimpa = data.trim();
+
+    // Caso venha em formato ISO: 2026-03-04 ou 2026-03-04T17:29:43.393Z
+    if (dataLimpa.includes("-")) {
+        const parteData = dataLimpa.split("T")[0];
+        const partes = parteData.split("-");
+
         if (partes.length === 3) {
-            const [dia, mes, ano] = partes;
-            const dataConvertida = new Date(`${ano}-${mes}-${dia}T00:00:00`);
-            if (!isNaN(dataConvertida.getTime())) {
-                return dataConvertida;
-            }
+            const [ano, mes, dia] = partes.map(Number);
+            const dt = new Date(ano, mes - 1, dia);
+            return isNaN(dt.getTime()) ? null : dt;
         }
     }
 
-    return null;
+    // Caso venha em formato BR: 04/03/2026
+    if (dataLimpa.includes("/")) {
+        const partes = dataLimpa.split("/");
+
+        if (partes.length === 3) {
+            const [dia, mes, ano] = partes.map(Number);
+            const dt = new Date(ano, mes - 1, dia);
+            return isNaN(dt.getTime()) ? null : dt;
+        }
+    }
+
+    const dt = new Date(dataLimpa);
+    return isNaN(dt.getTime()) ? null : dt;
 }
 
 function formatarDataBR(data) {
