@@ -257,15 +257,43 @@
     const dt = new Date(dataLimpa);
     return isNaN(dt.getTime()) ? null : dt;
 }
+function normalizarData(data) {
+    if (!data) return "";
+
+    const valor = String(data).trim();
+
+    // Formato ISO: 2026-03-04 ou 2026-03-04T17:29:43.393Z
+    if (valor.includes("-")) {
+        const parteData = valor.split("T")[0];
+        const partes = parteData.split("-");
+
+        if (partes.length === 3) {
+            const [ano, mes, dia] = partes;
+            return `${ano}-${String(mes).padStart(2, "0")}-${String(dia).padStart(2, "0")}`;
+        }
+    }
+
+    // Formato BR: 04/03/2026
+    if (valor.includes("/")) {
+        const partes = valor.split("/");
+
+        if (partes.length === 3) {
+            const [dia, mes, ano] = partes;
+            return `${ano}-${String(mes).padStart(2, "0")}-${String(dia).padStart(2, "0")}`;
+        }
+    }
+
+    return "";
+}
 
 function formatarDataBR(data) {
-    const dt = normalizarData(data);
-    if (!dt) return "---";
+    const dataNormalizada = normalizarData(data);
+    if (!dataNormalizada) return "---";
 
-    const dia = String(dt.getDate()).padStart(2, "0");
-    const mes = String(dt.getMonth() + 1).padStart(2, "0");
-    const ano = dt.getFullYear();
+    const partes = dataNormalizada.split("-");
+    if (partes.length !== 3) return "---";
 
+    const [ano, mes, dia] = partes;
     return `${dia}/${mes}/${ano}`;
 }
 
@@ -293,117 +321,114 @@ function renderizarTabela(dados) {
     });
 }
 
-        function mostrarDetalhes(index) {
-            const item = dadosExibidos[index];
-            const corpo = document.getElementById("detalhesCorpo");
+function mostrarDetalhes(index) {
+    const item = dadosExibidos[index];
+    const corpo = document.getElementById("detalhesCorpo");
 
-            let fotosHtml = '';
-            let listaFotos = [];
+    let fotosHtml = '';
+    let listaFotos = [];
 
-            if (item.fotos) {
-                listaFotos = String(item.fotos)
-                    .split(',')
-                    .map(f => f.trim())
-                    .filter(f => f.length > 100);
-            }
+    if (item.fotos) {
+        listaFotos = String(item.fotos)
+            .split(',')
+            .map(f => f.trim())
+            .filter(f => f.length > 100);
+    }
 
-            if (listaFotos.length > 0) {
-                fotosHtml = `
-                    <div class="info-row" style="border-bottom:none">
-                        <b>📷 ANEXOS / FOTOS (Clique para ampliar)</b>
-                        <div class="gallery-container">
-                            ${listaFotos.map(imgData => {
-                                let cleanData = imgData;
+    if (listaFotos.length > 0) {
+        fotosHtml = `
+            <div class="info-row" style="border-bottom:none">
+                <b>📷 ANEXOS / FOTOS (Clique para ampliar)</b>
+                <div class="gallery-container">
+                    ${listaFotos.map(imgData => {
+                        let cleanData = imgData;
 
-                                if (!cleanData.startsWith('data:image')) {
-                                    cleanData = `data:image/jpeg;base64,${cleanData}`;
-                                }
+                        if (!cleanData.startsWith('data:image')) {
+                            cleanData = `data:image/jpeg;base64,${cleanData}`;
+                        }
 
-                                return `<img src="${cleanData}" class="photo-thumb" onclick="event.stopPropagation(); abrirFoto('${cleanData}')">`;
-                            }).join('')}
-                        </div>
-                    </div>`;
-            } else {
-                fotosHtml = `
-                    <div class="info-row">
-                        <b>📷 ANEXOS / FOTOS</b>
-                        <p style="font-size:12px; color:#999;">Nenhuma foto registrada para esta ocorrência.</p>
-                    </div>`;
-            }
-
-            const enderecoTexto = item.endereco ? item.endereco : "Não informado";
-            const bairroTexto = item.bairro ? item.bairro : "Não informado";
-            const equipeTexto = item.equipe ? item.equipe.toUpperCase() : "NÃO INFORMADA";
-            const solicitanteTexto = item.solicitante ? item.solicitante : "Não informado";
-            const cpfTexto = item.cpf ? item.cpf : "Não informado";
-            const descricaoTexto = item.descricao ? item.descricao : "Sem observações adicionais.";
-
-            corpo.innerHTML = `
-                <div class="info-card">
-                    <strong>📍 Endereço</strong>
-                    <span>${enderecoTexto}</span>
+                        return `<img src="${cleanData}" class="photo-thumb" onclick="event.stopPropagation(); abrirFoto('${cleanData}')">`;
+                    }).join('')}
                 </div>
+            </div>`;
+    } else {
+        fotosHtml = `
+            <div class="info-row">
+                <b>📷 ANEXOS / FOTOS</b>
+                <p style="font-size:12px; color:#999;">Nenhuma foto registrada para esta ocorrência.</p>
+            </div>`;
+    }
 
-                <div class="info-card">
-                    <strong>🏘️ Bairro</strong>
-                    <span>${bairroTexto}</span>
-                </div>
+    const enderecoTexto = item.endereco ? item.endereco : "Não informado";
+    const bairroTexto = item.bairro ? item.bairro : "Não informado";
+    const equipeTexto = item.equipe ? item.equipe.toUpperCase() : "NÃO INFORMADA";
+    const solicitanteTexto = item.solicitante ? item.solicitante : "Não informado";
+    const cpfTexto = item.cpf ? item.cpf : "Não informado";
+    const descricaoTexto = item.descricao ? item.descricao : "Sem observações adicionais.";
 
-                <div class="info-card">
-                    <strong>🚛 Equipe Responsável</strong>
-                    <span>${equipeTexto}</span>
-                </div>
+    corpo.innerHTML = `
+        <div class="info-card">
+            <strong>📍 Endereço</strong>
+            <span>${enderecoTexto}</span>
+        </div>
 
-                <div class="info-card">
-                    <strong>👤 Solicitante</strong>
-                    <span>${solicitanteTexto}</span>
-                </div>
+        <div class="info-card">
+            <strong>🏘️ Bairro</strong>
+            <span>${bairroTexto}</span>
+        </div>
 
-                <div class="info-card">
-                    <strong>🪪 CPF</strong>
-                    <span>${cpfTexto}</span>
-                </div>
+        <div class="info-card">
+            <strong>🚛 Equipe Responsável</strong>
+            <span>${equipeTexto}</span>
+        </div>
 
-                <div class="info-row">
-                    <b>📝 Descrição do Serviço</b>
-                    <div class="desc-box">${descricaoTexto}</div>
-                </div>
+        <div class="info-card">
+            <strong>👤 Solicitante</strong>
+            <span>${solicitanteTexto}</span>
+        </div>
 
-                ${fotosHtml}
-            `;
-            document.getElementById("modalDetalhes").style.display = "block";
-        }
+        <div class="info-card">
+            <strong>🪪 CPF</strong>
+            <span>${cpfTexto}</span>
+        </div>
 
-        function abrirFoto(src) {
-            const fullPhoto = document.getElementById("fullPhoto");
-            fullPhoto.src = src;
-            document.getElementById("viewerModal").style.display = "flex";
-        }
+        <div class="info-row">
+            <b>📝 Descrição do Serviço</b>
+            <div class="desc-box">${descricaoTexto}</div>
+        </div>
 
-        function fecharModal() {
-            document.getElementById("modalDetalhes").style.display = "none";
-        }
-        
-        window.onclick = function(event) {
-            const modal = document.getElementById("modalDetalhes");
-            if (event.target == modal) fecharModal();
-        }
+        ${fotosHtml}
+    `;
+    document.getElementById("modalDetalhes").style.display = "block";
+}
 
-        function aplicarFiltros() {
+function abrirFoto(src) {
+    const fullPhoto = document.getElementById("fullPhoto");
+    fullPhoto.src = src;
+    document.getElementById("viewerModal").style.display = "flex";
+}
+
+function fecharModal() {
+    document.getElementById("modalDetalhes").style.display = "none";
+}
+
+window.onclick = function(event) {
+    const modal = document.getElementById("modalDetalhes");
+    if (event.target == modal) fecharModal();
+}
+
+function aplicarFiltros() {
     const dtInicio = document.getElementById("dataInicio").value;
     const dtFim = document.getElementById("dataFim").value;
     const tipo = document.getElementById("filtroTipo").value;
     const status = document.getElementById("filtroStatus").value;
 
-    const dataInicioObj = dtInicio ? new Date(`${dtInicio}T00:00:00`) : null;
-    const dataFimObj = dtFim ? new Date(`${dtFim}T23:59:59`) : null;
-
     dadosExibidos = todasOcorrencias.filter(item => {
         const dataItem = normalizarData(item.data);
         let bateData = true;
 
-        if (dtInicio && (!dataItem || dataItem < dataInicioObj)) bateData = false;
-        if (dtFim && (!dataItem || dataItem > dataFimObj)) bateData = false;
+        if (dtInicio && (!dataItem || dataItem < dtInicio)) bateData = false;
+        if (dtFim && (!dataItem || dataItem > dtFim)) bateData = false;
 
         const bateTipo = tipo === "" || item.tipo === tipo;
         const bateStatus = status === "" || item.status === status;
