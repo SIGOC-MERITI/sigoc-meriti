@@ -427,7 +427,7 @@ app.get("/logs", async (req, res) => {
    SERVIDOR
 ================================ */
 app.get("/", (req, res) => {
-  res.sendFile(__dirname + "/public/login.html");
+  res.sendFile(path.join(__dirname, "public", "login.html"));
 });
 
 module.exports = app;
