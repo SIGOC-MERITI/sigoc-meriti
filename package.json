@@ -4,8 +4,9 @@
   "description": "Sistema de Gestão de Ocorrências Defesa Civil São João de Meriti",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
-  },
+  "start": "node server.js",
+  "dev": "node server.js"
+},
   "author": "Defesa Civil Meriti",
   "license": "ISC",
   "dependencies": {

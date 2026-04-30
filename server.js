@@ -430,6 +430,4 @@ app.get("/", (req, res) => {
   res.sendFile(__dirname + "/public/login.html");
 });
 
-app.listen(PORT, () => {
-  console.log(`SIGOC rodando em http://localhost:${PORT}`);
-});
+module.exports = app;
