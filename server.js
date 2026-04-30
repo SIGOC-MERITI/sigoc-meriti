@@ -12,7 +12,9 @@ app.use(cors());
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
-app.use("/", express.static(path.join(__dirname, "public")));
+app.use(express.static(path.join(__dirname, "public"), {
+  index: "login.html"
+}));
 
 /* ================================
    CONEXÃO COM SUPABASE
@@ -23,10 +25,6 @@ const pool = new Pool({
     rejectUnauthorized: false
   }
 });
-
-pool.connect()
-  .then(() => console.log("🔥 Conectado ao Supabase"))
-  .catch(err => console.error("❌ Erro no banco:", err));
 
 
 /* ================================
@@ -101,7 +99,6 @@ async function criarTabelas() {
   `);
 }
 
-criarTabelas();
 
 /* ================================
    LOG
