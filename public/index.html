@@ -280,7 +280,7 @@ async function salvarPlantao() {
 
 async function gerarECompartilhar() {
     const alaSel = document.getElementById('ala');
-    document.getElementById('p-data').innerText = new Date().toLocaleString('pt-BR');
+    document.getElementById('p-data').innerText = document.getElementById('dataRetroativa')?.value ? formatarDataRetroativaParaBR(document.getElementById('dataRetroativa').value) : new Date().toLocaleString('pt-BR');
     document.getElementById('p-ala').innerText = alaSel.options[alaSel.selectedIndex].text;
     document.getElementById('p-tipo').innerText = document.getElementById('tipoServico').value;
     document.getElementById('p-subtipo').innerText = document.getElementById('subTipoPoda').value ? `(${document.getElementById('subTipoPoda').value})` : "";
