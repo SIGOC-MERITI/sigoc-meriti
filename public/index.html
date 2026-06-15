@@ -89,7 +89,26 @@
         <textarea id="descricao" rows="3" maxlength="300"></textarea>
 
         <label>Status da ocorrência</label>
-        <select id="status"><option>Em andamento</option><option>Finalizado</option></select>
+        <select id="status">
+  <option value="Andamento">Andamento</option>
+  <option value="Finalizado">Finalizado</option>
+  <option value="A vistoriar">A vistoriar</option>
+  <option value="Vistoriado">Vistoriado</option>
+  <option value="Light">Light</option>
+  <option value="Ouvidoria">Ouvidoria</option>
+
+  <optgroup label="Espaço Público">
+    <option value="Espaço Público">Espaço Público</option>
+    <option value="Espaço Público - Escola">— Escola</option>
+    <option value="Espaço Público - Creche">— Creche</option>
+    <option value="Espaço Público - Praças">— Praças</option>
+    <option value="Espaço Público - Igrejas">— Igrejas</option>
+    <option value="Espaço Público - Prédios Públicos">— Prédios Públicos</option>
+  </optgroup>
+
+  <option value="Autoridades">Autoridades</option>
+  <option value="Lideranças">Lideranças</option>
+</select>
 
         <button class="btn-action" onclick="capturarGPS()">📍 Capturar Localização</button>
         <div id="local" style="margin-bottom: 10px; font-size: 14px;"></div>
