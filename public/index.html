@@ -95,6 +95,8 @@
 
         <label>Status da ocorrência</label>
        <label for="solicitante">Solicitante</label>
+<!-- Campo Solicitante (Tipo/Categoria) -->
+<label for="solicitante">Solicitante</label>
 <select id="solicitante" name="solicitante" required>
   <option value="" disabled selected>Selecione o solicitante...</option>
   <option value="Light">Light</option>
@@ -111,6 +113,11 @@
   <option value="Via Instagram">Via Instagram</option>
 </select>
 
+<!-- NOVO: Campo para digitar o nome de quem solicitou -->
+<label for="nome_solicitante">Nome do Solicitante</label>
+<input type="text" id="nome_solicitante" name="nome_solicitante" placeholder="Digite o nome do solicitante (Ex: Pastor Alan)" required>
+
+<!-- Campo Status -->
 <label for="status">Status da ocorrência</label>
 <select id="status" name="status" required>
   <option value="Andamento" selected>Andamento</option>
