@@ -302,8 +302,11 @@ app.post("/ocorrencias", async (req, res) => {
 
    const result = await pool.query(
   `INSERT INTO ocorrencias
-   (data, equipe, tipo, quantidade, descricao, status, endereco, bairro, solicitante, nome_solicitante, cpf, usuario, fotos)
-   VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)`,
+   (data, equipe, tipo, quantidade, descricao, status, endereco, bairro,
+    solicitante, nome_solicitante, cpf, usuario, fotos)
+   VALUES
+   ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
+   RETURNING id`,
   [
     dataFinal,
     equipe,
