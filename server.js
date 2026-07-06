@@ -65,6 +65,7 @@ async function criarTabelas() {
       endereco TEXT,
       bairro TEXT,
       solicitante TEXT,
+      nome_solicitante TEXT,
       cpf TEXT,
       usuario TEXT,
       fotos TEXT,
@@ -280,6 +281,7 @@ app.post("/ocorrencias", async (req, res) => {
     endereco,
     bairro,
     solicitante,
+    nome_solicitante,
     cpf,
     usuario,
     fotos,
@@ -299,9 +301,9 @@ app.post("/ocorrencias", async (req, res) => {
         : dataAtualServidor;
 
     const result = await pool.query(
-      `INSERT INTO ocorrencias 
-      (data, equipe, tipo, quantidade, descricao, status, endereco, bairro, solicitante, cpf, usuario, fotos) 
-      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) RETURNING id`,
+     INSERT INTO ocorrencias
+(data, equipe, tipo, quantidade, descricao, status, endereco, bairro, solicitante, nome_solicitante, cpf, usuario, fotos)
+VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
       [
         dataFinal,
         equipe,
@@ -312,6 +314,7 @@ app.post("/ocorrencias", async (req, res) => {
         endereco,
         bairro,
         solicitante,
+  nome_solicitante,
         cpf,
         usuario,
         fotos
