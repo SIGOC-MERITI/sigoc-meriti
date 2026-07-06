@@ -187,16 +187,17 @@
     <div class="table-container">
         <table id="tabelaRelatorio">
             <thead>
-                <tr>
-                    <th>Data</th>
-                    <th>Equipe</th>
-                    <th>Solicitante</th>
-                    <th>Bairro</th>
-                    <th>Tipo</th>
-                    <th>Qtd</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
+  <tr>
+    <th>Data</th>
+    <th>Equipe</th>
+    <th>Nome do Solicitante</th> <!-- Nova coluna para exibir 'Marcelo' -->
+    <th>Bairro</th>
+    <th>Tipo</th>
+    <th>Qtd</th>
+    <th>Solicitante</th> <!-- Categoria (Autoridades, Light, etc.) antes do Status -->
+    <th>Status</th>
+  </tr>
+</thead>
             <tbody id="tabelaCorpo"></tbody>
         </table>
     </div>
@@ -329,16 +330,15 @@ function renderizarTabela(dados) {
 
         const dataFormatada = formatarDataBR(item.data);
 
-        corpo.innerHTML += `
-            <tr onclick="mostrarDetalhes(${index})">
-                <td>${dataFormatada}</td>
-                <td style="text-transform: uppercase; font-weight:bold;">${item.equipe || "---"}</td>
-                <td>${item.solicitante || "---"}</td>
-                <td>${item.bairro || "---"}</td>
-                <td>${item.tipo || "---"}</td>
-                <td>${item.quantidade || "---"}</td>
-                <td><span class="status-badge ${statusClass}">${item.status || "---"}</span></td>
-            </tr>`;
+       corpo.innerHTML += `
+  <tr onclick="mostrarDetalhes(${index})">
+    <td>${dataFormatada}</td>
+    <td style="text-transform: uppercase; font-weight: bold;">${item.equipe || "---"}</td>
+    <td>${item.nome_solicitante || item.nomeSolicitante || "---"}</td> <td>${item.bairro || "---"}</td>
+    <td>${item.tipo || "---"}</td>
+    <td>${item.quantidade || "---"}</td>
+    <td>${item.solicitante || "---"}</td> <td><span class="status-badge ${statusClass}">${item.status || "---"}</span></td>
+  </tr>`;
     });
 }
 
