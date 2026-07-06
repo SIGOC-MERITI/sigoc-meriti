@@ -137,7 +137,7 @@
         <div class="etapa"><b>📸 Meio</b><div id="meioContainer"></div><button class="btn-action" onclick="adicionarFoto('meio')">Adicionar foto</button></div>
         <div class="etapa"><b>📸 Fim</b><div id="fimContainer"></div><button class="btn-action" onclick="adicionarFoto('fim')">Adicionar foto</button></div>
 
-        <label>Nome do solicitante</label><input type="text" id="solicitante">
+        <label>Nome do solicitante</label><input type="text" id="nome_solicitante">
         <label>CPF do solicitante</label><input type="text" id="cpf">
 <div class="input-group" id="grupoDataRetroativa" style="display:none;">
     <label>Data da ocorrência</label>
@@ -290,6 +290,7 @@ async function salvarPlantao() {
         endereco: document.getElementById("enderecoManual").value || endereco,
         bairro: document.getElementById("bairroManual").value || bairro,
         solicitante: document.getElementById("solicitante").value,
+        nome_solicitante: document.getElementById("nome_solicitante").value, 
         cpf: document.getElementById("cpf").value,
         usuario: usuarioLogado.usuario || "",
         pode_retroativa: podeRetroativa,
