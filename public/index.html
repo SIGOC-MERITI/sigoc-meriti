@@ -114,7 +114,13 @@
   <option value="Autoridades">Autoridades</option>
   <option value="Lideranças">Lideranças</option>
 </select>
-
+        
+<label>Endereço da ocorrência</label>
+<input
+    type="text"
+    id="enderecoManual"
+    placeholder="Digite o endereço da ocorrência">
+        
         <button class="btn-action" onclick="capturarGPS()">📍 Capturar Localização</button>
         <div id="local" style="margin-bottom: 10px; font-size: 14px;"></div>
 
@@ -182,8 +188,13 @@
                     const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&format=json`);
                     const data = await res.json();
                     endereco = data.address.road || "Rua não identificada";
-                    bairro = data.address.suburb || data.address.neighbourhood || "";
-                    document.getElementById("local").innerHTML = `📍 <b>Local:</b> ${endereco} - ${bairro}`;
+bairro = data.address.suburb || data.address.neighbourhood || "";
+
+document.getElementById("enderecoManual").value =
+`${endereco}${bairro ? " - " + bairro : ""}`;
+
+document.getElementById("local").innerHTML =
+`📍 <b>Local:</b> ${endereco} - ${bairro}`;
                 } catch (e) { alert("Erro ao obter endereço."); }
             }, () => alert("Ative o GPS!"));
         }
@@ -268,7 +279,7 @@ async function salvarPlantao() {
             : document.getElementById("quantidade").value,
         descricao: document.getElementById("descricao").value,
         status: document.getElementById("status").value,
-        endereco,
+        endereco: document.getElementById("enderecoManual").value || endereco,
         bairro,
         solicitante: document.getElementById("solicitante").value,
         cpf: document.getElementById("cpf").value,
@@ -308,7 +319,9 @@ async function gerarECompartilhar() {
     document.getElementById('p-ala').innerText = alaSel.options[alaSel.selectedIndex].text;
     document.getElementById('p-tipo').innerText = document.getElementById('tipoServico').value;
     document.getElementById('p-subtipo').innerText = document.getElementById('subTipoPoda').value ? `(${document.getElementById('subTipoPoda').value})` : "";
-    document.getElementById('p-local').innerText = `${endereco} - ${bairro}`;
+    document.getElementById('p-local').innerText =
+document.getElementById("enderecoManual").value ||
+`${endereco} - ${bairro}`;
     document.getElementById('p-solicitante').innerText = document.getElementById('solicitante').value;
     document.getElementById('p-desc').innerText = document.getElementById('descricao').value;
 
