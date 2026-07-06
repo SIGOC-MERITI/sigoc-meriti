@@ -120,7 +120,11 @@
     type="text"
     id="enderecoManual"
     placeholder="Digite o endereço da ocorrência">
-        
+        <label>Bairro</label>
+<input
+    type="text"
+    id="bairroManual"
+    placeholder="Digite o bairro">
         <button class="btn-action" onclick="capturarGPS()">📍 Capturar Localização</button>
         <div id="local" style="margin-bottom: 10px; font-size: 14px;"></div>
 
@@ -192,7 +196,7 @@ bairro = data.address.suburb || data.address.neighbourhood || "";
 
 document.getElementById("enderecoManual").value =
 `${endereco}${bairro ? " - " + bairro : ""}`;
-
+document.getElementById("bairroManual").value = bairro;
 document.getElementById("local").innerHTML =
 `📍 <b>Local:</b> ${endereco} - ${bairro}`;
                 } catch (e) { alert("Erro ao obter endereço."); }
@@ -280,7 +284,7 @@ async function salvarPlantao() {
         descricao: document.getElementById("descricao").value,
         status: document.getElementById("status").value,
         endereco: document.getElementById("enderecoManual").value || endereco,
-        bairro,
+        bairro: document.getElementById("bairroManual").value || bairro,
         solicitante: document.getElementById("solicitante").value,
         cpf: document.getElementById("cpf").value,
         usuario: usuarioLogado.usuario || "",
