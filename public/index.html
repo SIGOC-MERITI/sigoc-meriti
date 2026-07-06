@@ -94,25 +94,29 @@
         <textarea id="descricao" rows="3" maxlength="300"></textarea>
 
         <label>Status da ocorrência</label>
-        <select id="status">
-  <option value="Andamento">Andamento</option>
+       <label for="solicitante">Solicitante</label>
+<select id="solicitante" name="solicitante" required>
+  <option value="" disabled selected>Selecione o solicitante...</option>
+  <option value="Light">Light</option>
+  <option value="Ouvidoria">Ouvidoria</option>
+  <option value="Meio Ambiente">Meio Ambiente</option>
+  <option value="Escola">Escola</option>
+  <option value="Creche">Creche</option>
+  <option value="Praça">Praça</option>
+  <option value="Igreja">Igreja</option>
+  <option value="Predios Publicos">Prédios Públicos</option>
+  <option value="Liderancas">Lideranças</option>
+  <option value="Autoridades">Autoridades</option>
+  <option value="Via Central">Via Central</option>
+  <option value="Via Instagram">Via Instagram</option>
+</select>
+
+<label for="status">Status da ocorrência</label>
+<select id="status" name="status" required>
+  <option value="Andamento" selected>Andamento</option>
   <option value="Finalizado">Finalizado</option>
   <option value="A vistoriar">A vistoriar</option>
   <option value="Vistoriado">Vistoriado</option>
-  <option value="Light">Light</option>
-  <option value="Ouvidoria">Ouvidoria</option>
-
-  <optgroup label="Espaço Público">
-    <option value="Espaço Público">Espaço Público</option>
-    <option value="Espaço Público - Escola">— Escola</option>
-    <option value="Espaço Público - Creche">— Creche</option>
-    <option value="Espaço Público - Praças">— Praças</option>
-    <option value="Espaço Público - Igrejas">— Igrejas</option>
-    <option value="Espaço Público - Prédios Públicos">— Prédios Públicos</option>
-  </optgroup>
-
-  <option value="Autoridades">Autoridades</option>
-  <option value="Lideranças">Lideranças</option>
 </select>
         
 <label>Endereço da ocorrência</label>
