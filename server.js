@@ -300,27 +300,26 @@ app.post("/ocorrencias", async (req, res) => {
         ? data
         : dataAtualServidor;
 
-    const result = await pool.query(
-     INSERT INTO ocorrencias
-(data, equipe, tipo, quantidade, descricao, status, endereco, bairro, solicitante, nome_solicitante, cpf, usuario, fotos)
-VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
-      [
-        dataFinal,
-        equipe,
-        tipo,
-        quantidade,
-        descricao,
-        status,
-        endereco,
-        bairro,
-        solicitante,
-  nome_solicitante,
-        cpf,
-        usuario,
-        fotos
-      ]
-    );
-
+   const result = await pool.query(
+  `INSERT INTO ocorrencias
+   (data, equipe, tipo, quantidade, descricao, status, endereco, bairro, solicitante, nome_solicitante, cpf, usuario, fotos)
+   VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)`,
+  [
+    dataFinal,
+    equipe,
+    tipo,
+    quantidade,
+    descricao,
+    status,
+    endereco,
+    bairro,
+    solicitante,
+    nome_solicitante,
+    cpf,
+    usuario,
+    fotos
+  ]
+);
     const textoLog =
       pode_retroativa === true && data
         ? `Registrou ocorrência retroativa ${tipo} em ${bairro}`
